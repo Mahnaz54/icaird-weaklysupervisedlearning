@@ -7,21 +7,6 @@ Data Efficient and Weakly Supervised Computational Pathology on Whole Slide Imag
 * NVIDIA GPU (Tested on Nvidia DGX-1)
 * philips-pathology-sdk (2.1.1)
 * Python packages required to run the project are listed in requiremets.txt file 
-## How to run the code using docker containers?
-Navigate to the project directory and follow the following steps.
-*Step 1: Create docker image 
-```shell
-make docker_image
-```
-*Step 2: Run the docker container
-```shell
-make docker_run
-```
-*Step3: Install the requirements
-```shell
-make requirements
-```
-
 
 ## WSI Segmentation and Patching 
 The first step focuses on segmenting the tissue and excluding any holes. The segmentation of specific slides can be adjusted by tuning the individual parameters (e.g. dilated vessels appearing as holes may be important for certain sarcomas.)
@@ -247,4 +232,36 @@ python eval.py -h
 ```
 
 By adding your own custom datasets into **eval.py** the same way as you do for **main.py**, you can also easily test trained models on independent test sets. 
+
+
+## How to run the code using docker containers?
+Navigate to the project directory and follow the following steps.
+* Step 1: Create docker image 
+```shell
+make docker_image
+```
+* Step 2: Run the docker container
+```shell
+make docker_run
+```
+* Step3: Install the requirements
+```shell
+make requirements
+```
+* Step 4: Update the environment
+```shell
+make export_environment
+```
+* Step 5: Create Docker Container
+```shell
+make docker_run_local
+```
+If you want to run the docker on a server map the volumes properly below  **docker_run** in **Makefile** and then run the following command:
+```shell
+make docker_run
+```
+* Step 6: Run each of the scripts in the docker container
+```shell
+python -m script_name_without(.py) <list of arguments>
+
 
