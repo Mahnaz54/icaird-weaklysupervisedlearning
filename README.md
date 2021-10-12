@@ -256,7 +256,7 @@ make export_environment
 ```shell
 make docker_run_local
 ```
-	If you want to run the docker on a server map the volumes properly below  **docker_run** in **Makefile** and then run the following command:
+To run the docker on a server map the volumes properly in  **docker_run** section in **Makefile** and then run the following command:
 ```shell
 make docker_run
 ```
