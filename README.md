@@ -236,32 +236,32 @@ By adding your own custom datasets into **eval.py** the same way as you do for *
 
 ## How to run the code using docker containers?
 Navigate to the project directory and follow the following steps.
-* Step 1: Create docker image 
+* **Step 1:** Create docker image 
 ```shell
 make docker_image
 ```
-* Step 2: Run the docker container
+* **Step 2:** Run the docker container
 ```shell
 make docker_run
 ```
-* Step3: Install the requirements
+* **Step3:** Install the requirements
 ```shell
 make requirements
 ```
-* Step 4: Update the environment
+* **Step 4:** Update the environment
 ```shell
 make export_environment
 ```
-* Step 5: Create Docker Container
+* **Step 5:** Create Docker Container
 ```shell
 make docker_run_local
 ```
-If you want to run the docker on a server map the volumes properly below  **docker_run** in **Makefile** and then run the following command:
+	If you want to run the docker on a server map the volumes properly below  **docker_run** in **Makefile** and then run the following command:
 ```shell
 make docker_run
 ```
-* Step 6: Run each of the scripts in the docker container
+* **Step 6:** Run each of the scripts in the docker container
 ```shell
-python -m script_name_without(.py) <list of arguments>
+python -m filename_without(.py) <list of arguments>
 
 
