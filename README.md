@@ -7,6 +7,21 @@ Data Efficient and Weakly Supervised Computational Pathology on Whole Slide Imag
 * NVIDIA GPU (Tested on Nvidia DGX-1)
 * philips-pathology-sdk (2.1.1)
 * Python packages required to run the project are listed in requiremets.txt file 
+## How to run the code using docker containers?
+Navigate to the project directory and follow the following steps.
+*Step 1: Create docker image 
+```shell
+make docker_image
+```
+*Step 2: Run the docker container
+```shell
+make docker_run
+```
+*Step3: Install the requirements
+```shell
+make requirements
+```
+
 
 ## WSI Segmentation and Patching 
 The first step focuses on segmenting the tissue and excluding any holes. The segmentation of specific slides can be adjusted by tuning the individual parameters (e.g. dilated vessels appearing as holes may be important for certain sarcomas.)
