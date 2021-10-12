@@ -47,8 +47,6 @@ The **patches** folder contains arrays of extracted tissue patches from each sli
 The **stitches** folder contains downsampled visualizations of stitched tissue patches (one image per slide) (Optional, not used for downstream tasks)
 The auto-generated csv file **process_list_autogen.csv** contains a list of all slides processed, along with their segmentation/patching parameters used.
 
-<img src="results/masks/IC-EN-00040-01.png" width="1000px" align="center" />
-<img src="results/stitches/IC-EN-00400-01.png" width="1000px" align="center" />
 
 ### Two-Step Run (Mannually Adjust Parameters For Specific Slides)
 To ensure that high quality segmentation and extraction of relevant tissue patches, user has the option of first performing segmentation (typically around 1s per slide), inspecting the segmentation results and tweaking the parameters for select slides if necessary and then extracting patches using the tweaked parameters. i.e., first run:
