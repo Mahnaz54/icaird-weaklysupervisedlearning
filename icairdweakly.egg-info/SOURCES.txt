@@ -1,0 +1,6 @@
+setup.py
+icairdweakly.egg-info/PKG-INFO
+icairdweakly.egg-info/SOURCES.txt
+icairdweakly.egg-info/dependency_links.txt
+icairdweakly.egg-info/top_level.txt
+libraries/__init__.py

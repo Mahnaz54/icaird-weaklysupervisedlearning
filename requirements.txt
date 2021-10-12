@@ -1,0 +1,3 @@
+# scripts the local package in development mode
+-e .
+
