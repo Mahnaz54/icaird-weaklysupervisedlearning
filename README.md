@@ -13,7 +13,7 @@ To setup the project, do the following:
 1. If you haven't already, install the Python 3 version of Anaconda from their [downlaod site](https://www.anaconda.com/products/individual).
 2. Clone the project using git. It's currently hosted on GitHub at davemor/wsi-learning. Enter the command line, navigate to where you want the project to be stored, for example your Development directory, and use the following command:
 ```bash
-git clone https://github.com/davemor/https://github.com/Mahnaz54/icaird-weaklysupervisedlearning.git
+git clone https://github.com/Mahnaz54/icaird-weaklysupervisedlearning.git
 ```
 3. Create the Conda virtual environment to install all the required packages into.
 ```bash
