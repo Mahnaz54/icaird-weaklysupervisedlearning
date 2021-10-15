@@ -7,7 +7,25 @@ Data Efficient and Weakly Supervised Computational Pathology on Whole Slide Imag
 * NVIDIA GPU (Tested on Nvidia DGX-1)
 * philips-pathology-sdk (2.1.1)
 * Python packages required to run the project are listed in requiremets.txt file 
-
+## Setup
+This guide explains how to get the project setup so you can start contributing to the code base and running experiments. It assumes an Ubuntu 18.04 LTS or similar Linux installation and that the tools **git** and **make** are installed. make is used to automate many tasks for this project, to see what each one doing under the hood check out the **Makefile** in the root directory of the project.
+To setup the project, do the following:
+1. If you haven't already, install the Python 3 version of Anaconda from their [downlaod site](https://www.anaconda.com/products/individual).
+2. Clone the project using git. It's currently hosted on GitHub at davemor/wsi-learning. Enter the command line, navigate to where you want the project to be stored, for example your Development directory, and use the following command:
+```bash
+git clone https://github.com/davemor/https://github.com/Mahnaz54/icaird-weaklysupervisedlearning.git
+```
+3. Create the Conda virtual environment to install all the required packages into.
+```bash
+cd icaird-wealysupervisedlearning
+make create_environment
+```
+4. Activate the environment and install the dependencies in it.
+```bash
+conda activate icaird-weaklysupervisedlearning
+make requirements
+```
+You should now be read to edit and run the code in the project.
 ## WSI Segmentation and Patching 
 The first step focuses on segmenting the tissue and excluding any holes. The segmentation of specific slides can be adjusted by tuning the individual parameters (e.g. dilated vessels appearing as holes may be important for certain sarcomas.)
 The following example assumes that digitized whole slide image data in (.isyntax) format is stored under a folder named DATA_DIRECTORY
