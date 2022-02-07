@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils.utils import initialize_weights
+from icairdweakly.utils.utils import initialize_weights
 import numpy as np
 
 """
@@ -21,7 +21,7 @@ class Attn_Net(nn.Module):
             nn.Tanh()]
 
         if dropout:
-            self.module.append(nn.Dropout(0.25))
+            self.module.append(nn.Dropout(0.35))
 
         self.module.append(nn.Linear(D, n_classes))
         
@@ -48,8 +48,8 @@ class Attn_Net_Gated(nn.Module):
         self.attention_b = [nn.Linear(L, D),
                             nn.Sigmoid()]
         if dropout:
-            self.attention_a.append(nn.Dropout(0.25))
-            self.attention_b.append(nn.Dropout(0.25))
+            self.attention_a.append(nn.Dropout(0.35))
+            self.attention_b.append(nn.Dropout(0.35))
 
         self.attention_a = nn.Sequential(*self.attention_a)
         self.attention_b = nn.Sequential(*self.attention_b)
@@ -75,14 +75,14 @@ args:
     subtyping: whether it's a subtyping problem
 """
 class CLAM_SB(nn.Module):
-    def __init__(self, gate = True, size_arg = "small", dropout = False, k_sample=8, n_classes=4,
+    def __init__(self, gate = True, size_arg = "small", dropout = False, k_sample=5, n_classes=4,
         instance_loss_fn=nn.CrossEntropyLoss(), subtyping=False):
         super(CLAM_SB, self).__init__()
-        self.size_dict = {"small": [1024, 512, 256], "big": [1024, 512, 384]}
+        self.size_dict = {"small": [1024, 512, 128], "big": [1024, 512, 384]}
         size = self.size_dict[size_arg]
         fc = [nn.Linear(size[0], size[1]), nn.ReLU()]
         if dropout:
-            fc.append(nn.Dropout(0.25))
+            fc.append(nn.Dropout(0.2))
         if gate:
             attention_net = Attn_Net_Gated(L = size[1], D = size[2], dropout = dropout, n_classes = 1)
         else:
@@ -202,7 +202,7 @@ class CLAM_MB(CLAM_SB):
         size = self.size_dict[size_arg]
         fc = [nn.Linear(size[0], size[1]), nn.ReLU()]
         if dropout:
-            fc.append(nn.Dropout(0.25))
+            fc.append(nn.Dropout(0.35))
         if gate:
             attention_net = Attn_Net_Gated(L = size[1], D = size[2], dropout = dropout, n_classes = n_classes)
         else:
@@ -266,4 +266,5 @@ class CLAM_MB(CLAM_SB):
         if return_features:
             results_dict.update({'features': M})
         return logits, Y_prob, Y_hat, A_raw, results_dict
+
 

@@ -42,9 +42,11 @@ def main(args):
     folds = np.arange(start, end)
     for i in folds:
         seed_torch(args.seed)
+
         train_dataset, val_dataset, test_dataset = dataset.return_splits(from_id=False, 
-                csv_path='{}/splits_{}.csv'.format(args.split_dir, i))
-        
+        csv_path='{}'.format(args.split_dir, i))
+
+
         datasets = (train_dataset, val_dataset, test_dataset)
         val_results, test_results, val_acc, val_auc, test_acc, test_auc  = train(datasets, i, args)
         val_results = pd.DataFrame(val_results, columns = ['slide','actual_label', 'predicted_label'])
@@ -54,10 +56,14 @@ def main(args):
         test_cm_name = 'test_cm_fold_'+ str(i)+'.csv'
         val_cm_name = 'val_cm_fold_'+ str(i)+'.csv'
         
-        #for cervical
+        #for cervical Multi-class
         #val_results = val_results.replace({0:'normal_inflammation', 1:'low_grade', 2:'high_grade', 3:'malignant' })
         #test_results = test_results.replace({0:'normal_inflammation', 1:'low_grade', 2:'high_grade', 3:'malignant'})
         
+        #for Cervical Binary
+        #val_results = val_results.replace({0:'normal_inflammation', 1:'low_grade' })
+        #test_results = test_results.replace({0:'normal_inflammation', 1:'low_grade'})
+
         #for endometrail
         val_results = val_results.replace({0:'malignant', 1:'insufficient', 2:'other_benign'})
         test_results = test_results.replace({0:'malignant', 1:'insufficient', 2:'other_benign'})
@@ -65,14 +71,14 @@ def main(args):
         val_results.to_csv(os.path.join(args.results_dir, val_cm_name))
         test_results.to_csv(os.path.join(args.results_dir,test_cm_name))
         
-		# plot confusion matrix for each fold
+        #plot confusion matrix for each fold
         cm_valid = pd.crosstab(val_results['predicted_label'], val_results['actual_label'])
         cm_test = pd.crosstab(test_results['predicted_label'], test_results['actual_label'])
 
-        print(cm_valid)
+        print('Confusion Matrix for Valid Set:\n',cm_valid)
         print('\n')
-        print(cm_test)
-       	
+        print('Confusion Matrix for Test Set:\n',cm_test)
+                
  
         plt.clf()
         fig1 = plt.figure(figsize=(4,4))
@@ -80,6 +86,7 @@ def main(args):
         ax.set_aspect(1)
         val_heatmap_name = 'valid_cm_fold_'+ str(i)+'.png'
         valid_cm_heatmap = sn.heatmap(cm_valid.T, annot=True, fmt='d', cmap="YlGnBu", cbar=False)
+        plt.title("Confusion Matrix for Valid Set", fontsize =12)
         plt.savefig(os.path.join(args.results_dir, val_heatmap_name),bbox_inches='tight', dpi=100)
         
         plt.clf()
@@ -88,6 +95,7 @@ def main(args):
         ax.set_aspect(1)
         test_heatmap_name = 'test_cm_fold_' +str(i) +'.png'
         test_cm_heatmap = sn.heatmap(cm_test.T, annot=True, fmt='d', cmap="YlGnBu", cbar=False)
+        plt.title("Confusion Matrix for Test Set", fontsize=16)
         plt.savefig(os.path.join(args.results_dir, test_heatmap_name),bbox_inches='tight', dpi=100)
         
         all_test_auc.append(test_auc)
@@ -99,7 +107,7 @@ def main(args):
         save_pkl(filename, test_results)
     
     final_df = pd.DataFrame({'folds':folds, 'val_acc':all_val_acc, 'val_auc':val_auc, 'test_acc':all_test_acc, 'test_auc':test_auc})
-
+    print(final_df)
     if len(folds) != args.k:
         save_name = 'summary_partial_{}_{}.csv'.format(start, end)
     else:
@@ -127,6 +135,7 @@ parser.add_argument('--results_dir', default='./results', help='results director
 parser.add_argument('--split_dir', type=str, default=None, 
                     help='manually specify the set of splits to use, ' 
                     +'instead of infering from the task and label_frac argument (default: None)')
+parser.add_argument('--csv_path', help='path to the csv file contatining all slides with labels')
 parser.add_argument('--log_data', action='store_true', default=False, help='log data using tensorboard')
 parser.add_argument('--testing', action='store_true', default=False, help='debugging tool')
 parser.add_argument('--early_stopping', action='store_true', default=False, help='enable early stopping')
@@ -195,19 +204,19 @@ print('\nLoad Dataset')
 
 if args.task == 'task_1_tumor_vs_normal':
     args.n_classes=2
-    dataset = Generic_MIL_Dataset(csv_path = 'dataset_csv/cervical_clean_low_grade_vs_high_grade.csv',
-                            data_dir= os.path.join(args.data_root_dir, 'tumor_vs_normal_resnet_features'),
+    dataset = Generic_MIL_Dataset(csv_path = args.csv_path,
+                            data_dir= os.path.join(args.data_root_dir),
                             shuffle = False, 
                             seed = args.seed, 
                             print_info = True,
-                            label_dict = {'low_grade':0, 'high_grade':1},
+                            label_dict = {'normal_inflammation':0, 'low_grade':1},
                             patient_strat=False,
                             ignore=[])
 
 elif args.task == 'task_2_tumor_subtyping_endometrial':
     args.n_classes=3
-    dataset = Generic_MIL_Dataset(csv_path = '../dataset_csv/endometrial_clean.csv',
-                            data_dir= os.path.join(args.data_root_dir, 'endometrial_resnet_features'),
+    dataset = Generic_MIL_Dataset(csv_path =args.csv_path, 
+                            data_dir= os.path.join(args.data_root_dir),
                             shuffle = False, 
                             seed = args.seed, 
                             print_info = True,
@@ -216,8 +225,8 @@ elif args.task == 'task_2_tumor_subtyping_endometrial':
                             ignore=[])
 elif args.task == 'task_3_tumor_subtyping_cervical':
     args.n_classes = 4
-    dataset = Generic_MIL_Dataset(csv_path='dataset_csv/cervical_clean.csv',
-                                  data_dir=os.path.join(args.data_root_dir, 'cervical_resnet_features'),
+    dataset = Generic_MIL_Dataset(csv_path=args.csv_path,
+                                  data_dir=os.path.join(args.data_root_dir),
                                   shuffle=False,
                                   seed=args.seed,
                                   print_info=True,
@@ -233,17 +242,10 @@ else:
 if not os.path.isdir(args.results_dir):
     os.mkdir(args.results_dir)
 
-args.results_dir = os.path.join(args.results_dir, str(args.exp_code) + '_s{}'.format(args.seed))
-if not os.path.isdir(args.results_dir):
-    os.mkdir(args.results_dir)
-
 if args.split_dir is None:
-    args.split_dir = os.path.join('../splits', args.task+'_{}'.format(int(args.label_frac*100)))
+   args.split_dir = os.path.join('splits', args.task+'_{}'.format(int(args.label_frac*100)))
 else:
-    args.split_dir = os.path.join('../splits', args.split_dir)
-
-print('split_dir: ', args.split_dir)
-assert os.path.isdir(args.split_dir)
+    args.splits_dir = os.path.join('splits', args.split_dir)
 
 settings.update({'split_dir': args.split_dir})
 
