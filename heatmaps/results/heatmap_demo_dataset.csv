@@ -1,0 +1,4 @@
+slide_id,label,scanned_level,process,status,seg_level,sthresh,mthresh,close,use_otsu,keep_ids,exclude_ids,a_t,a_h,max_n_holes,vis_level,line_thickness,use_padding,contour_fn,bag_size,Pred_0,p_0,Pred_1,p_1,Pred_2,p_2
+IC-EN-00025-01,2,1,1,tbp,6,10,7,4,False,none,none,100.0,16.0,20,-1,250,True,four_pt,20190.0,other_benign,0.9965754151344299,malignant,0.0034096415620297194,insufficient,1.4974232726672199e-05
+IC-EN-00204-01,1,1,1,tbp,6,10,7,4,False,none,none,100.0,16.0,20,-1,250,True,four_pt,17039.0,insufficient,0.9750379323959351,other_benign,0.015454227104783058,malignant,0.009507871232926846
+IC-EN-00093-01,0,1,1,tbp,6,10,7,4,False,none,none,100.0,16.0,20,-1,250,True,four_pt,21255.0,malignant,0.9988299012184143,other_benign,0.001164340297691524,insufficient,5.663840966008138e-06
