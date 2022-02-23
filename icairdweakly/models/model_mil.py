@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils.utils import initialize_weights
+from icairdweakly.utils.utils import initialize_weights
 import numpy as np
 
 class MIL_fc(nn.Module):

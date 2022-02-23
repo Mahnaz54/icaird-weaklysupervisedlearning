@@ -12,7 +12,7 @@ import h5py
 
 from scipy import stats
 from torch.utils.data import Dataset
-from utils.utils import generate_split, nth
+from icairdweakly.utils.utils import generate_split, nth
 
 
 
@@ -175,7 +175,6 @@ class Generic_WSI_Classification_Dataset(Dataset):
         def get_split_from_df(self, all_splits, split_key='train'):
                 split = all_splits[split_key]
                 split = split.dropna().reset_index(drop=True)
-
                 if len(split) > 0:
                         mask = self.slide_data['slide_id'].isin(split.tolist())
                         df_slice = self.slide_data[mask].reset_index(drop=True)
@@ -203,8 +202,6 @@ class Generic_WSI_Classification_Dataset(Dataset):
 
 
         def return_splits(self, from_id=True, csv_path=None):
-
-
                 if from_id:
                         if len(self.train_ids) > 0:
                                 train_data = self.slide_data.loc[self.train_ids].reset_index(drop=True)
@@ -230,11 +227,10 @@ class Generic_WSI_Classification_Dataset(Dataset):
                 
                 else:
                         assert csv_path 
-                        all_splits = pd.read_csv(csv_path)
+                        all_splits = pd.read_csv(csv_path, dtype=self.slide_data['slide_id'].dtype)
                         train_split = self.get_split_from_df(all_splits, 'train')
                         val_split = self.get_split_from_df(all_splits, 'val')
                         test_split = self.get_split_from_df(all_splits, 'test')
-                        
                 return train_split, val_split, test_split
 
         def get_list(self, ids):
@@ -335,7 +331,7 @@ class Generic_MIL_Dataset(Generic_WSI_Classification_Dataset):
 
 
 class Generic_Split(Generic_MIL_Dataset):
-        def __init__(self, slide_data, data_dir=None, num_classes=2):
+    def __init__(self, slide_data, data_dir=None, num_classes=4):
                 self.use_h5 =False 
                 self.slide_data = slide_data
                 self.data_dir = data_dir
@@ -343,9 +339,8 @@ class Generic_Split(Generic_MIL_Dataset):
                 self.slide_cls_ids = [[] for i in range(self.num_classes)]
                 for i in range(self.num_classes):
                         self.slide_cls_ids[i] = np.where(self.slide_data['label'] == i)[0]
-
-        def __len__(self):
-                return len(self.slide_data)
+    def __len__(self):
+        return len(self.slide_data)
                 
 
 

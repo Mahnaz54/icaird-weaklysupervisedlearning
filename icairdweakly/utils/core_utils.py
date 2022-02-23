@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 import torch
-from utils.utils import *
+from icairdweakly.utils.utils import *
 import os
-from datasets.dataset_generic import save_splits
-from models.model_mil import MIL_fc, MIL_fc_mc
-from models.model_clam import CLAM_MB, CLAM_SB
+from icairdweakly.datasets.dataset_generic import save_splits
+from icairdweakly.models.model_mil import MIL_fc, MIL_fc_mc
+from icairdweakly.models.model_clam import CLAM_MB, CLAM_SB
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.metrics import auc as calc_auc
@@ -47,7 +47,7 @@ class Accuracy_Logger(object):
 
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
-    def __init__(self, patience=20, stop_epoch=50, verbose=False):
+    def __init__(self, patience=20, stop_epoch=50, verbose=True):
         """
         Args:
             patience (int): How long to wait after last time validation loss improved.
@@ -106,8 +106,8 @@ def train(datasets, cur, args):
 
     print('\nInit train/val/test splits...', end=' ')
     train_split, val_split, test_split = datasets
+
     save_splits(datasets, ['train', 'val', 'test'], os.path.join(args.results_dir, 'splits_{}.csv'.format(cur)))
-    print('Done!')
     print("Training on {} samples".format(len(train_split)))
     print("Validating on {} samples".format(len(val_split)))
     print("Testing on {} samples".format(len(test_split)))
@@ -305,9 +305,9 @@ def train_loop(epoch, model, loader, optimizer, n_classes, writer = None, loss_f
     print('\n')
     for batch_idx, (data, label) in enumerate(loader):
         data, label = data.to(device), label.to(device)
-
         logits, Y_prob, Y_hat, _, _ = model(data)
         #print('Y_hat = ', Y_hat) 
+        #print('label =', label)
         acc_logger.log(Y_hat, label)
         loss = loss_fn(logits, label)
         loss_value = loss.item()

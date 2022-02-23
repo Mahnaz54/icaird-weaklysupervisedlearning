@@ -7,8 +7,8 @@ import PIL.Image as Image
 import h5py
 from torch.utils.data import Dataset
 import torch
-from wsi_core.util_classes import Contour_Checking_fn, isInContourV1, isInContourV2, isInContourV3_Easy, isInContourV3_Hard
-from wsi_core.WholeSlideImage import RegionRequest
+from icairdweakly.wsi_core.util_classes import Contour_Checking_fn, isInContourV1, isInContourV2, isInContourV3_Easy, isInContourV3_Hard
+from icairdweakly.wsi_core.WholeSlideImage import RegionRequest
 
 def default_transforms(mean = (0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
     t = transforms.Compose(

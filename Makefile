@@ -14,7 +14,7 @@ HAS_CONDA=True
 endif
 
 # network
-JUPYTER_PORT := 8361
+JUPYTER_PORT := 8061
 #################################################################################
 # PYTHON ENVIRONMENT COMMANDS                                                   #
 #################################################################################
@@ -80,7 +80,7 @@ docker_image:
 	docker build -t $(PROJECT_NAME) .
 
 docker_run:
-	docker run --shm-size=8G --gpus all -p $(JUPYTER_PORT):$(JUPYTER_PORT) \
+	docker run --shm-size=16G --gpus all -p $(JUPYTER_PORT):$(JUPYTER_PORT) \
 				-v $(PROJECT_DIR):/home/ubuntu/$(PROJECT_NAME) \
 				-v /data3/iCAIRD:/home/ubuntu/$(PROJECT_NAME)/data \
 				-v /data1/icaird-weaklysupervisedlearning/results:/home/ubuntu/$(PROJECT_NAME)/results \
