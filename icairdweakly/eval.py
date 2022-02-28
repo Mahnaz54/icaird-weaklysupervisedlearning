@@ -42,6 +42,7 @@ parser.add_argument('--micro_average', action='store_true', default=False,
                     help='use micro_average instead of macro_avearge for multiclass AUC')
 parser.add_argument('--split', type=str, choices=['train', 'val', 'test', 'all'], default='test')
 parser.add_argument('--task', type=str, choices=['task_1_tumor_vs_normal',  'task_2_tumor_subtyping_endometrial', 'task_3_tumor_subtyping_cervical'])
+parser.add_argument('--csv_path', help='path to the csv file contatining all slides with labels')
 args = parser.parse_args()
 
 device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -74,33 +75,35 @@ print(settings)
 
 if args.task == 'task_1_tumor_vs_normal':
     args.n_classes=2
-    dataset = Generic_MIL_Dataset(csv_path = 'dataset_csv/tumor_vs_normal_dummy_clean.csv',
-                            data_dir= os.path.join(args.data_root_dir, 'tumor_vs_normal_resnet_features'),
-                            shuffle = False,
+    dataset = Generic_MIL_Dataset(csv_path = args.csv_path,
+                            data_dir= os.path.join(args.data_root_dir),
+                            shuffle = False, 
+                            seed = args.seed, 
                             print_info = True,
-                            label_dict = {'normal_tissue':0, 'tumor_tissue':1},
+                            label_dict = {'normal_inflammation':0, 'low_grade':1},
                             patient_strat=False,
                             ignore=[])
 
 elif args.task == 'task_2_tumor_subtyping_endometrial':
     args.n_classes=3
-    dataset = Generic_MIL_Dataset(csv_path = 'dataset_csv/endometrial_clean.csv',
-                            data_dir= os.path.join(args.data_root_dir, 'endometrial_resnet_features'),
-                            shuffle = False,
+    dataset = Generic_MIL_Dataset(csv_path =args.csv_path, 
+                            data_dir= os.path.join(args.data_root_dir),
+                            shuffle = False, 
+                            seed = args.seed, 
                             print_info = True,
-                            label_dict = {'malignant':0, 'insufficient':1, 'benign':2},
+                            label_dict = {'malignant':0, 'insufficient':1, 'other_benign':2},
                             patient_strat= False,
                             ignore=[])
 elif args.task == 'task_3_tumor_subtyping_cervical':
     args.n_classes = 4
-    dataset = Generic_MIL_Dataset(csv_path='dataset_csv/cervical_clean.csv',
-                                  data_dir=os.path.join(args.data_root_dir, 'cervical_resnet_features'),
+    dataset = Generic_MIL_Dataset(csv_path=args.csv_path,
+                                  data_dir=os.path.join(args.data_root_dir),
                                   shuffle=False,
+                                  seed=args.seed,
                                   print_info=True,
                                   label_dict = {'low_grade':1, 'high_grade':2, 'malignant':3, 'normal_inflammation':0},
                                   patient_strat=False,
                                   ignore=[])
-
 else:
     raise NotImplementedError
 
