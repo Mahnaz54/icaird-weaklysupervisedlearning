@@ -222,7 +222,7 @@ The script uses the **Generic_WSI_Classification_Dataset** Class for which the c
 ### GPU Training Example for Subtyping Problems (4-class)
 ``` shell
 CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code tumor_subtyping_cervical --weighted_sample --bag_loss ce --inst_loss svm --task task_2_tumor_subtyping_endometrial --model_type clam_sb --log_data --subtyping --data_root_dir FEATURES_PT_DIR --splits_dir SPLITS_DIR --csv_path csv_path
-
+```
 
 ### GPU Training Example for Subtyping Problems (3-class)
 ``` shell
