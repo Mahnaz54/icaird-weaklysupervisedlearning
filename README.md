@@ -186,7 +186,7 @@ if args.task == 'task_2_tumor_subtyping_endometrial':
                             ignore=[])
 ```
 ```python
-if args.task == 'task_3_tumor_subtyping_endometrial':
+if args.task == 'task_3_tumor_subtyping_cervical':
     args.n_classes = 4
     dataset = Generic_MIL_Dataset(csv_path='args.csv_path',
                                   data_dir=os.path.join(args.data_root_dir'),
@@ -207,14 +207,14 @@ The user would need to pass:
 Finally, the user should add this specific 'task' specified by this dataset object in the --task arguments as shown below:
 
 ```python
-parser.add_argument('--task', type=str, choices=['task_1_tumor_vs_normal',  'task_2_tumor_subtyping_endometrial', 'task_3_tumor_subtyping_endometrial'])
+parser.add_argument('--task', type=str, choices=['task_1_tumor_vs_normal',  'task_2_tumor_subtyping_endometrial', 'task_3_tumor_subtyping_cervical'])
 ```
 
 ### Training Splits
 For evaluating the algorithm's performance, multiple folds (e.g. 10-fold) of train/val/test splits can be used. Example 10-fold 80/10/10 splits for  endometrial, using 75% of training data can be found under the **splits** folder. These splits can be automatically generated using the create_splits_seq.py script with minimal modification just like with **main.py**. For example, endometrial splits with 75% of training data can be created by calling:
  
 ``` shell
-python create_splits_seq.py --task task_3_tumor_subtyping_endometrial --seed 1 --label_frac 0.75 --k 10
+python create_splits_seq.py --task task_2_tumor_subtyping_endometrial --seed 1 --label_frac 0.75 --k 10
 ```
 The script uses the **Generic_WSI_Classification_Dataset** Class for which the constructor expects the same arguments as 
 **Generic_MIL_Dataset** (without the data_dir argument). For details, please refer to the dataset definition in **datasets/dataset_generic.py**
