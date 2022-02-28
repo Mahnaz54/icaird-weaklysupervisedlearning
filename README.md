@@ -219,14 +219,18 @@ python create_splits_seq.py --task task_2_tumor_subtyping_endometrial --seed 1 -
 The script uses the **Generic_WSI_Classification_Dataset** Class for which the constructor expects the same arguments as 
 **Generic_MIL_Dataset** (without the data_dir argument). For details, please refer to the dataset definition in **datasets/dataset_generic.py**
 
-
 ### GPU Training Example for Subtyping Problems (4-class)
 ``` shell
-CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code tumor_subtyping_endometrial --weighted_sample --bag_loss ce --inst_loss svm --task task_2_tumor_subtyping_endometrial --model_type clam_sb --log_data --subtyping --data_root_dir DATA_ROOT_DIR
+CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code tumor_subtyping_cervical --weighted_sample --bag_loss ce --inst_loss svm --task task_2_tumor_subtyping_endometrial --model_type clam_sb --log_data --subtyping --data_root_dir FEATURES_PT_DIR --splits_dir SPLITS_DIR --csv_path csv_path
+
+
+### GPU Training Example for Subtyping Problems (3-class)
+``` shell
+CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code tumor_subtyping_endometrial --weighted_sample --bag_loss ce --inst_loss svm --task task_2_tumor_subtyping_endometrial --model_type clam_sb --log_data --subtyping --data_root_dir FEATURES_PT_DIR --splits_dir SPLITS_DIR --csv_path csv_path
 ``` 
 ### GPU Training Example for Binary Malignant vs. Normal Classification
 ``` shell
-CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code malignant_vs_normal  --weighted_sample --bag_loss ce --inst_loss svm --task task_1_tumor_vs_normal --model_type clam_sb --log_data --data_root_dir DATA_ROOT_DIR
+CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code malignant_vs_normal  --weighted_sample --bag_loss ce --inst_loss svm --task task_1_tumor_vs_normal --model_type clam_sb --log_data --data_root_dir FEATURES_PT_DIR --splits_dir SPLITS_DIR --csv_path csv_path
 ```
 Note: We have included the option to use a single-attention-branch CLAM model, which performs favoribly in most experiments and can be set via --model_type clam_sb (single branch) or clam_mb (multi branch). clam_sb is the default choice. Additionally, the user can adjust the number of patches used for clustering via --B.
 
