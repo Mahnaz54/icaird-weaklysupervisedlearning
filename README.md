@@ -38,8 +38,14 @@ DATA_DIRECTORY/
 ```
 
 ### Basic, Fully Automated Run
+Run all the commands from the "icairdweakly" folder where all code is placed.
 ``` shell
 python create_patches.py --source DATA_DIRECTORY --save_dir RESULTS_DIRECTORY --patch_size 256 --seg --patch --stitch
+```
+
+If you intend to create overlapping patches run the above command as following:
+``` shell
+python create_patches.py --source DATA_DIRECTORY --save_dir RESULTS_DIRECTORY --patch_size 256 --step_size 128 --seg --patch --stitch
 ```
 
 The above command will segment every slide in DATA_DIRECTORY using default parameters, extract all patches within the segemnted tissue regions, create a stitched reconstruction for each slide using its extracted patches (optional) and generate the following folder structure at the specified RESULTS_DIRECTORY:
@@ -134,23 +140,23 @@ where each .h5 file contains an array of extracted features along with their pat
 ### Datasets
 The data used for training and testing are expected to be organized as follows:
 ```bash
-DATA_ROOT_DIR/
-    ├──DATASET_1_DATA_DIR/
+RESULTS_DIR/
+    ├──FEATURES_DIR_1/pt_files
         ├── slide_1.pt
         ├── slide_2.pt
         └── ...
-    ├──DATASET_2_DATA_DIR/
+    ├──FEATURES_DIR_2/pt_files
         ├── slide_a.pt
         ├── slide_b.pt
         └── ...
-    └──DATASET_3_DATA_DIR/
+    └──FEATURES_DIR_3/pt_files
         ├── slide_i.pt
         ├── slide_ii.pt
         └── ...
     └── ...
 ```
-Namely, each dataset is expected to be a subfolder (e.g. DATASET_1_DATA_DIR) under DATA_ROOT_DIR, and the features extracted for each slide in the dataset is stored as a .pt file sitting under this subfolder.
-Datasets are also expected to be prepared in a csv format containing at least 3 columns: **case_id**, **slide_id**, and 1 or more labels columns for the slide-level labels. Each **case_id** is a unique identifier for a patient, while the **slide_id** is a unique identifier for a slide that correspond to the name of an extracted feature .pt file. This is necessary because often one patient has multiple slides, which might also have different labels. When train/val/test splits are created, we also make sure that slides from the same patient do not go to different splits. The slide ids should be consistent with what was used during the feature extraction step. We provide 2 examples of such dataset csv files in the **dataset_csv** folder: one for Cirvical and one for Endometrium data sets. 
+Namely, each dataset is expected to be a subfolder (e.g. FEATRES_DIR) under RESULTS_DIR, and the features extracted for each slide in the dataset is stored as a .pt file sitting under this subfolder.
+Datasets are also expected to be prepared in a csv format containing at least 3 columns: **case_id**, **slide_id**, and 1 or more labels columns for the slide-level labels. Each **case_id** is a unique identifier for a patient, while the **slide_id** is a unique identifier for a slide that correspond to the name of an extracted feature .pt file. This is necessary because often one patient has multiple slides, which might also have different labels. When train/val/test splits are created, we also make sure that slides from the same patient do not go to different splits. The slide ids should be consistent with what was used during the feature extraction step.  
 
 Dataset objects used for actual training/validation/testing can be constructed using the **Generic_MIL_Dataset** Class (defined in **datasets/dataset_generic.py**). Examples of such dataset objects passed to the models can be found in both **main.py** and **eval.py**. 
 
@@ -158,10 +164,10 @@ For training, look under main.py:
 ```python 
 if args.task == 'task_1_tumor_vs_normal':
     args.n_classes=2
-    dataset = Generic_MIL_Dataset(csv_path = 'dataset_csv/cervical_clean_malignant_vs_normal.csv',
-                            data_dir= os.path.join(args.data_root_dir, 'malignant_vs_normal_resnet_features'),
+    dataset = Generic_MIL_Dataset(csv_path = 'csv_path =args.csv_path,
+                            data_dir= os.path.join(args.data_root_dir),
                             shuffle = False, 
-                            seed = args.seed, 
+                            seed = args.seed,
                             print_info = True,
                             label_dict = {'normal':0 ,'malignant': 1},
                             patient_strat=False,
@@ -170,8 +176,8 @@ if args.task == 'task_1_tumor_vs_normal':
 ```python
 if args.task == 'task_2_tumor_subtyping_endometrial':
     args.n_classes=3
-    dataset = Generic_MIL_Dataset(csv_path = '../dataset_csv/endometrial_clean.csv',
-                            data_dir= os.path.join(args.data_root_dir, 'endometrial_resnet_features'),
+    dataset = Generic_MIL_Dataset(csv_path = 'args.csv_path',
+                            data_dir= os.path.join(args.data_root_dir'),
                             shuffle = False, 
                             seed = args.seed, 
                             print_info = True,
@@ -180,10 +186,10 @@ if args.task == 'task_2_tumor_subtyping_endometrial':
                             ignore=[])
 ```
 ```python
-if args.task == 'task_3_tumor_subtyping_cervical':
+if args.task == 'task_3_tumor_subtyping_endometrial':
     args.n_classes = 4
-    dataset = Generic_MIL_Dataset(csv_path='dataset_csv/cervical_clean.csv',
-                                  data_dir=os.path.join(args.data_root_dir, 'cervical_resnet_features'),
+    dataset = Generic_MIL_Dataset(csv_path='args.csv_path',
+                                  data_dir=os.path.join(args.data_root_dir'),
                                   shuffle=False,
                                   seed=args.seed,
                                   print_info=True,
@@ -201,14 +207,14 @@ The user would need to pass:
 Finally, the user should add this specific 'task' specified by this dataset object in the --task arguments as shown below:
 
 ```python
-parser.add_argument('--task', type=str, choices=['task_1_tumor_vs_normal',  'task_2_tumor_subtyping_endometrial', 'task_3_tumor_subtyping_cervical'])
+parser.add_argument('--task', type=str, choices=['task_1_tumor_vs_normal',  'task_2_tumor_subtyping_endometrial', 'task_3_tumor_subtyping_endometrial'])
 ```
 
 ### Training Splits
-For evaluating the algorithm's performance, multiple folds (e.g. 10-fold) of train/val/test splits can be used. Example 10-fold 80/10/10 splits for cervical and endometrial, using 75% of training data can be found under the **splits** folder. These splits can be automatically generated using the create_splits_seq.py script with minimal modification just like with **main.py**. For example, cervical splits with 75% of training data can be created by calling:
+For evaluating the algorithm's performance, multiple folds (e.g. 10-fold) of train/val/test splits can be used. Example 10-fold 80/10/10 splits for  endometrial, using 75% of training data can be found under the **splits** folder. These splits can be automatically generated using the create_splits_seq.py script with minimal modification just like with **main.py**. For example, endometrial splits with 75% of training data can be created by calling:
  
 ``` shell
-python create_splits_seq.py --task task_3_tumor_subtyping_cervical --seed 1 --label_frac 0.75 --k 10
+python create_splits_seq.py --task task_3_tumor_subtyping_endometrial --seed 1 --label_frac 0.75 --k 10
 ```
 The script uses the **Generic_WSI_Classification_Dataset** Class for which the constructor expects the same arguments as 
 **Generic_MIL_Dataset** (without the data_dir argument). For details, please refer to the dataset definition in **datasets/dataset_generic.py**
@@ -216,7 +222,7 @@ The script uses the **Generic_WSI_Classification_Dataset** Class for which the c
 
 ### GPU Training Example for Subtyping Problems (4-class)
 ``` shell
-CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code tumor_subtyping_cervical --weighted_sample --bag_loss ce --inst_loss svm --task task_2_tumor_subtyping_cervical --model_type clam_sb --log_data --subtyping --data_root_dir DATA_ROOT_DIR
+CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code tumor_subtyping_endometrial --weighted_sample --bag_loss ce --inst_loss svm --task task_2_tumor_subtyping_endometrial --model_type clam_sb --log_data --subtyping --data_root_dir DATA_ROOT_DIR
 ``` 
 ### GPU Training Example for Binary Malignant vs. Normal Classification
 ``` shell
@@ -237,7 +243,7 @@ python main.py -h
 ### Testing and Evaluation Script
 User also has the option of using the evluation script to test the performances of trained models. Examples corresponding to the models trained above are provided below:
 ``` shell
-CUDA_VISIBLE_DEVICES=0 python eval.py --drop_out --k 10 --models_exp_code tumor_subtyping_cervical --save_exp_code tumor_subtyping_cervical --task task_3_tumor_subtyping_cervical --model_type clam_sb --results_dir results --data_root_dir DATA_ROOT_DIR
+CUDA_VISIBLE_DEVICES=0 python eval.py --drop_out --k 10 --models_exp_code tumor_subtyping_endometrial --save_exp_code tumor_subtyping_endometrial --task task_3_tumor_subtyping_ --model_type clam_sb --results_dir results --data_root_dir DATA_ROOT_DIR
 ```
 
 ``` shell
