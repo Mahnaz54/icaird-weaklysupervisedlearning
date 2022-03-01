@@ -12,7 +12,7 @@ import h5py
 
 from scipy import stats
 from torch.utils.data import Dataset
-from icairdweakly.utils.utils import generate_split, nth
+from utils.utils import generate_split, nth
 
 
 
