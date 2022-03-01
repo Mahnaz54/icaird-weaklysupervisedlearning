@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from icairdweakly.utils.utils import initialize_weights
+from utils.utils import initialize_weights
 import numpy as np
 
 """
