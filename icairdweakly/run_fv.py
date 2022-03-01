@@ -53,7 +53,7 @@ parser.add_argument('--blur', default=False, type=bool)
 parser.add_argument('--normalise', default=False, type=bool)
 parser.add_argument('--sgd', default=False, type=bool)
 parser.add_argument('--relu', default=False, type=bool)
-parser.add_argument('--ckpt', default='../results/Endometrial/Results_Feb2022/Endo_all_classes_CLAM_sb_small')
+parser.add_argument('--ckpt', default='../results/Endometrial/Results_Feb2022/patch_256')
 parser.add_argument('--model_type', default='CLAM_SB')
 
 
