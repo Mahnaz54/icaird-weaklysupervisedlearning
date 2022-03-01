@@ -4,9 +4,9 @@ Data Efficient and Weakly Supervised Computational Pathology on Whole Slide Imag
 
 ## Pre-requisites:
 * Linux (Tested on Ubuntu 18.04)
-* NVIDIA GPU (Tested on Nvidia DGX-1)
+* NVIDIA GPU (Tested on GeForce GTX TITAN X)
 * philips-pathology-sdk (2.1.1)
-* Python packages required to run the project are listed in requiremets.txt file 
+* Python packages required to run the project are listed in **environment.yml** file 
 ## Setup
 This guide explains how to get the project setup so you can start contributing to the code base and running experiments. It assumes an Ubuntu 18.04 LTS or similar Linux installation and that the tools **git** and **make** are installed. make is used to automate many tasks for this project, to see what each one doing under the hood check out the **Makefile** in the root directory of the project.
 To setup the project, do the following:
@@ -126,11 +126,13 @@ CUDA_VISIBLE_DEVICES=0,1 python extract_features.py --data_dir DIR_TO_PATCHES --
 The above command expects the patched .h5 files to be stored under DIR_TO_PATCHES and will use 2 GPUs (0 and 1) and a batch size of 512 to extract 1024-dim features from each tissue patch for each slide and produce the following folder structure:
 ```bash
 FEATURES_DIRECTORY/
+
 	├── h5_files
             ├── slide_1.h5
             ├── slide_2.h5
             └── ...
-    ├── pt_files
+
+	├── pt_files
             ├── slide_1.pt
             ├── slide_2.pt
             └── ...
@@ -219,18 +221,19 @@ python create_splits_seq.py --task task_2_tumor_subtyping_endometrial --seed 1 -
 The script uses the **Generic_WSI_Classification_Dataset** Class for which the constructor expects the same arguments as 
 **Generic_MIL_Dataset** (without the data_dir argument). For details, please refer to the dataset definition in **datasets/dataset_generic.py**
 
+If you have a custom made split file, just pass the file path while running *mian.py*. The split file should be arranged in 3 columns ("train, val, test").
 ### GPU Training Example for Subtyping Problems (4-class)
 ``` shell
-CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code tumor_subtyping_cervical --weighted_sample --bag_loss ce --inst_loss svm --task task_2_tumor_subtyping_endometrial --model_type clam_sb --log_data --subtyping --data_root_dir FEATURES_PT_DIR --splits_dir SPLITS_DIR --csv_path csv_path
+CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code tumor_subtyping_cervical --weighted_sample --bag_loss ce --inst_loss svm --task task_2_tumor_subtyping_endometrial --model_type clam_sb --log_data --subtyping --data_root_dir FEATURES_PT_DIR --split_dir SPLITS_DIR --csv_path csv_path
 ```
 
 ### GPU Training Example for Subtyping Problems (3-class)
 ``` shell
-CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code tumor_subtyping_endometrial --weighted_sample --bag_loss ce --inst_loss svm --task task_2_tumor_subtyping_endometrial --model_type clam_sb --log_data --subtyping --data_root_dir FEATURES_PT_DIR --splits_dir SPLITS_DIR --csv_path csv_path
+CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code tumor_subtyping_endometrial --weighted_sample --bag_loss ce --inst_loss svm --task task_2_tumor_subtyping_endometrial --model_type clam_sb --log_data --subtyping --data_root_dir FEATURES_PT_DIR --split_dir SPLITS_DIR --csv_path csv_path
 ``` 
 ### GPU Training Example for Binary Malignant vs. Normal Classification
 ``` shell
-CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code malignant_vs_normal  --weighted_sample --bag_loss ce --inst_loss svm --task task_1_tumor_vs_normal --model_type clam_sb --log_data --data_root_dir FEATURES_PT_DIR --splits_dir SPLITS_DIR --csv_path csv_path
+CUDA_VISIBLE_DEVICES=0 python main.py --drop_out --early_stopping --lr 2e-4 --k 10 --label_frac 0.75 --exp_code malignant_vs_normal  --weighted_sample --bag_loss ce --inst_loss svm --task task_1_tumor_vs_normal --model_type clam_sb --log_data --data_root_dir FEATURES_PT_DIR --split_dir SPLITS_DIR --csv_path csv_path
 ```
 Note: We have included the option to use a single-attention-branch CLAM model, which performs favoribly in most experiments and can be set via --model_type clam_sb (single branch) or clam_mb (multi branch). clam_sb is the default choice. Additionally, the user can adjust the number of patches used for clustering via --B.
 
