@@ -5,16 +5,16 @@ import torch.nn.functional as F
 import pdb
 import os
 import pandas as pd
-from icairdweakly.utils.utils import *
+from utils.utils import *
 from PIL import Image
 from math import floor
 import matplotlib.pyplot as plt
-from icairdweakly.datasets.wsi_dataset import Wsi_Region
+from datasets.wsi_dataset import Wsi_Region
 import h5py
-from icairdweakly.wsi_core.WholeSlideImage import WholeSlideImage
+from wsi_core.WholeSlideImage import WholeSlideImage
 from scipy.stats import percentileofscore
 import math
-from icairdweakly.utils.file_utils import save_hdf5
+from utils.file_utils import save_hdf5
 from scipy.stats import percentileofscore
 
 device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
