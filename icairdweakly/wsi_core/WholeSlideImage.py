@@ -22,7 +22,7 @@ from wsi_core.util_classes import isInContourV1, isInContourV2, isInContourV3_Ea
 from utils.file_utils import load_pkl, save_pkl
 
 import sys
-sys.path.append('...')
+sys.path.append('..')
 
 import libraries.pixelengine as pixelengine
 import libraries.softwarerendercontext as softwarerendercontext
