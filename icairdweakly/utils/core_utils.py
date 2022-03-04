@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 import torch
-from icairdweakly.utils.utils import *
+from utils.utils import *
 import os
-from icairdweakly.datasets.dataset_generic import save_splits
-from icairdweakly.models.model_mil import MIL_fc, MIL_fc_mc
-from icairdweakly.models.model_clam import CLAM_MB, CLAM_SB
+from datasets.dataset_generic import save_splits
+from models.model_mil import MIL_fc, MIL_fc_mc
+from models.model_clam import CLAM_MB, CLAM_SB
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.metrics import auc as calc_auc
