@@ -47,7 +47,7 @@ args = parser.parse_args()
 
 print(args)
 
-device = torch.device('cuda' if torch.cuda.is_available() and not args.cpu else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 os.environ["WANDB_SILENT"] = "true"
 
 proj = "saliency_segmentation"
