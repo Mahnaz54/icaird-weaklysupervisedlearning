@@ -90,20 +90,20 @@ if __name__ == '__main__':
     config_dict = yaml.safe_load(open(config_path, 'r'))
     config_dict = parse_config_dict(args, config_dict)
 
-    # for key, value in config_dict.items():
-    #        if isinstance(value, dict):
-    #                print('\n'+key)
-    #                for value_key, value_value in value.items():
-    #                        print (value_key + " : " + str(value_value))
-    #        else:
-    #                print ('\n'+key + " : " + str(value))
-    # decision = input('Continue? Y/N ')
-    # if decision in ['Y', 'y', 'Yes', 'yes']:
-    #        pass
-    # elif decision in ['N', 'n', 'No', 'NO']:
-    #        exit()
-    # else:
-    #        raise NotImplementedError
+    for key, value in config_dict.items():
+           if isinstance(value, dict):
+                   print('\n'+key)
+                   for value_key, value_value in value.items():
+                           print (value_key + " : " + str(value_value))
+           else:
+                   print ('\n'+key + " : " + str(value))
+    decision = input('Continue? Y/N ')
+    if decision in ['Y', 'y', 'Yes', 'yes']:
+           pass
+    elif decision in ['N', 'n', 'No', 'NO']:
+           exit()
+    else:
+           raise NotImplementedError
 
     args = config_dict
     patch_args = argparse.Namespace(**args['patching_arguments'])
