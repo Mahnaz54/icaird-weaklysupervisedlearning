@@ -299,7 +299,7 @@ if __name__ == '__main__':
                         _, _, wsi_object = compute_from_patches(wsi_object=wsi_object, 
                                 model=model, 
                                 feature_extractor=feature_extractor, 
-                                batch_size=exp_args.batch_size, **blocky_wsi_kwargs, 
+                                batch_size=exp_args.batch_size, blocky_wsi_kwargs,
                                 attn_save_path=None, feat_save_path=h5_path, 
                                 ref_scores=None)                                
                 
