@@ -140,7 +140,7 @@ if __name__ == '__main__':
                         def_patch_params[key] = preset_df.loc[0, key]
 
         if data_args.process_list is None:
-                if isintance(data_args.data_dir, list):
+                if isinstance(data_args.data_dir, list):
                         slides = []
                         for data_dir in data_args.data_dir:
                                 slides.extend(os.listdir(data_dir))
@@ -221,7 +221,7 @@ if __name__ == '__main__':
                         top_left = None
                         bot_right = None
                 
-                #print('slide id: ', slide_id)
+                print('slide id: ', slide_id)
                 print('top left: ', top_left, ' bot right: ', bot_right)
                 
                 if isinstance(data_args.data_dir, str):
@@ -232,7 +232,7 @@ if __name__ == '__main__':
                 else:
                         raise NotImplementedError
                 mask_file = os.path.join(r_slide_save_dir, slide_id+'_mask.pkl')
-                #print('mask file is stored at {}'.format(os.path.join(r_slide_save_dir, slide_id+'_mask.pkl')))
+                print('mask file is stored at {}'.format(os.path.join(r_slide_save_dir, slide_id+'_mask.pkl')))
                 
                 # Load segmentation and filter parameters
                 seg_params = def_seg_params.copy()
@@ -268,13 +268,13 @@ if __name__ == '__main__':
                 wsi_object = initialize_wsi(slide_path, seg_mask_path=mask_file, seg_params=seg_params, filter_params=filter_params)
                 print('Done!')
                 
-                #print(patch_args.patch_level)
+                print(patch_args.patch_level)
                 if patch_args.patch_level == 0:
                     wsi_ref_downsample = 1
                 else:    
                     downsample = tuple(ele1 // ele2 for ele1, ele2 in zip(wsi_object.level_dimensions[0], wsi_object.level_dimensions[patch_args.patch_level]))
                     wsi_ref_downsample = (downsample[1]+downsample[3])//2
-                #print(wsi_ref_downsample)
+                print(wsi_ref_downsample)
                 
                 # the actual patch size for heatmap visualization should be the patch size * downsample factor * custom downsample factor
                 vis_patch_size = tuple((np.array(patch_size) * np.array(wsi_ref_downsample) * patch_args.custom_downsample).astype(int))
@@ -287,12 +287,12 @@ if __name__ == '__main__':
                 print(vis_params)
                 mask = wsi_object.visWSI(**vis_params, number_contours=True)
                 mask.save(mask_path)
-                #print(mask_path)
+                print(mask_path)
                 features_path = os.path.join(r_slide_save_dir, slide_id+'.pt')
                 h5_path = os.path.join(r_slide_save_dir, slide_id+'.h5')
                 
-                #print(features_path)
-                #print(h5_path)
+                print(features_path)
+                print(h5_path)
 
                 ##### check if h5_features_file exists ######
                 if not os.path.isfile(h5_path) :
@@ -316,7 +316,7 @@ if __name__ == '__main__':
                 
                 wsi_object.saveSegmentation(mask_file)
                 Y_hats, Y_hats_str, Y_probs, A = infer_single_slide(model, features, label, reverese_label_dict, exp_args.n_classes)
-                #print('Y_hats={} Y_hats_str={}'.format(Y_hats,Y_hats_str)) 
+                print('Y_hats={} Y_hats_str={}'.format(Y_hats,Y_hats_str))
                 del features
                 
                 if not os.path.isfile(block_map_save_path): 
@@ -362,7 +362,7 @@ if __name__ == '__main__':
                 'custom_downsample':patch_args.custom_downsample, 'level': patch_args.patch_level, 'use_center_shift': heatmap_args.use_center_shift}
             
                 heatmap_save_name = '{}_blockmap.isyntax'.format(slide_id)
-                #print('heatmap will be  saved at: {}'.format(os.path.join(r_slide_save_dir, heatmap_save_name)))
+                print('heatmap will be  saved at: {}'.format(os.path.join(r_slide_save_dir, heatmap_save_name)))
                 if os.path.isfile(os.path.join(r_slide_save_dir, heatmap_save_name)):
                         pass
                 else:
