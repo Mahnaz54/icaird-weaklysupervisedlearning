@@ -21,7 +21,7 @@ from wsi_core.wsi_utils import savePatchIter_bag_hdf5, initialize_hdf5_bag, coor
 from wsi_core.util_classes import isInContourV1, isInContourV2, isInContourV3_Easy, isInContourV3_Hard, Contour_Checking_fn
 from utils.file_utils import load_pkl, save_pkl
 
-from libraries import pixelengine
+import libraries.pixelengine as pixelengine
 import libraries.softwarerendercontext as softwarerendercontext
 import libraries.softwarerenderbackend as softwarerenderbackend
 

@@ -138,7 +138,7 @@ if __name__ == "__main__":
             csv_path = '{}/splits_{}.csv'.format(args.splits_dir, folds[ckpt_idx])
             datasets = dataset.return_splits(from_id=False, csv_path=csv_path)
             split_dataset = datasets[datasets_id[args.split]]
-        model, patient_results, test_error, auc, df  = eval(split_dataset, args, ckpt_paths[ckpt_idx])
+        model, patient_results, test_error, auc, df = eval(split_dataset, args, ckpt_paths[ckpt_idx])
         all_results.append(all_results)
         all_auc.append(auc)
         all_acc.append(1-test_error)
