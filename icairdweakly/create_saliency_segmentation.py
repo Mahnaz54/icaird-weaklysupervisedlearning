@@ -53,14 +53,12 @@ os.environ["WANDB_SILENT"] = "true"
 proj = "saliency_segmentation"
 run = wandb.init(project=proj, entity="jessicamarycooper", config=args)
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 labels = ['malignant', 'insufficient', 'other_benign']
 
 att_model = eval(args.model_type)(n_classes=len(labels))
 
 ckpt_path = args.ckpt
-ckpt = torch.load(ckpt_path, map_location=torch.device('cpu'))
+ckpt = torch.load(ckpt_path, map_location=device)
 
 ckpt_clean = {}
 for key in ckpt.keys():
@@ -78,7 +76,7 @@ def model(x):
 
 
 # Load all patches for one slide
-patches = torch.randn(1, 3, args.dim, args.dim)
+patches = torch.randn(1, 3, args.dim, args.dim).to(device)
 
 print(model(patches))
 
