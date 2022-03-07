@@ -263,14 +263,14 @@ if __name__ == '__main__':
         else:
             seg_params['exclude_ids'] = []
 
-        # for key, val in seg_params.items():
-        #         print('{}: {}'.format(key, val))
+        for key, val in seg_params.items():
+                print('{}: {}'.format(key, val))
 
-        # for key, val in filter_params.items():
-        #         print('{}: {}'.format(key, val))
+        for key, val in filter_params.items():
+                print('{}: {}'.format(key, val))
 
-        # for key, val in vis_params.items():
-        #         print('{}: {}'.format(key, val))
+        for key, val in vis_params.items():
+                print('{}: {}'.format(key, val))
 
         print('Initializing WSI object')
         wsi_object = initialize_wsi(slide_path, seg_mask_path=mask_file, seg_params=seg_params,
@@ -294,7 +294,6 @@ if __name__ == '__main__':
         if vis_params['vis_level'] < 0:
             best_level = get_best_level_for_downsample(32)
             vis_params['vis_level'] = best_level
-        print(vis_params)
         mask = wsi_object.visWSI(**vis_params, number_contours=True)
         mask.save(mask_path)
         features_path = os.path.join(r_slide_save_dir, slide_id + '.pt')
