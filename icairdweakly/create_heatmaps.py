@@ -285,8 +285,7 @@ if __name__ == '__main__':
                         best_level = get_best_level_for_downsample(32)
                         vis_params['vis_level'] = best_level
                 print(vis_params)
-                exit()
-                mask = wsi_object.visWSI(**vis_params, number_contours=True)
+                mask = wsi_object.visWSI(vis_params, number_contours=True)
                 mask.save(mask_path)
                 print(mask_path)
                 features_path = os.path.join(r_slide_save_dir, slide_id+'.pt')
