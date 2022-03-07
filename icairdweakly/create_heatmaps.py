@@ -90,6 +90,7 @@ if __name__ == '__main__':
     config_dict = yaml.safe_load(open(config_path, 'r'))
     config_dict = parse_config_dict(args, config_dict)
 
+    print(config_dict)
     for key, value in config_dict.items():
            if isinstance(value, dict):
                    print('\n'+key)
