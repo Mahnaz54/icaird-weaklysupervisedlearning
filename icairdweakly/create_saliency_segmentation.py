@@ -1,25 +1,89 @@
+import wandb
+import numpy as np
+import torch.optim as optim
+import pandas as pd
+import os
 import argparse
+import random
+import torchvision.transforms.functional as TF
+import torch
+from utils.utils import *
+from datasets.dataset_generic import Generic_MIL_Dataset
+from models.model_clam import CLAM_SB, CLAM_MB
+from models.model_mil import MIL_fc, MIL_fc_mc
+from models.resnet_custom import resnet50_baseline
 
-parser = argparse.ArgumentParser(description='Saliency Segmentation')
-parser.add_argument('--data_root_dir', type=str, default=None,
-                    help='data directory')
-parser.add_argument('--results_dir', type=str, default='./results',
-                    help='relative path to results folder, i.e. '+
-                    'the directory containing models_exp_code relative to project root (default: ./results)')
-parser.add_argument('--save_exp_code', type=str, default=None,
-                    help='experiment code to save eval results')
-parser.add_argument('--models_exp_code', type=str, default=None,
-                    help='experiment code to load trained models (directory under results_dir containing model checkpoints')
-parser.add_argument('--splits_dir', type=str, default=None,
-                    help='splits directory, if using custom splits other than what matches the task (default: None)')
-parser.add_argument('--model_size', type=str, choices=['small', 'big'], default='small',
-                    help='size of model (default: small)')
-parser.add_argument('--model_type', type=str, choices=['clam_sb', 'clam_mb', 'mil'], default='clam_sb',
-                    help='type of model (default: clam_sb)')
-parser.add_argument('--drop_out', action='store_true', default=False,
-                    help='whether model uses dropout')
+pd.set_option('display.max_columns', None)
 
-parser.add_argument('--split', type=str, choices=['train', 'val', 'test', 'all'], default='test')
-parser.add_argument('--task', type=str, choices=['task_1_tumor_vs_normal',  'task_2_tumor_subtyping_endometrial', 'task_3_tumor_subtyping_cervical'])
-parser.add_argument('--csv_path', help='path to the csv file contatining all slides with labels')
+
+################################################ SET UP SEED AND ARGS AND EXIT HANDLER
+
+
+def set_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.cuda.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
+set_seed(0)
+
+import torch.nn as nn
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--ckpt', default='../results/Endometrial/Results_Feb2022/patch_256/CLAM_sb/s_0_checkpoint.pt')
+parser.add_argument('--model_type', default='CLAM_SB')
+parser.add_argument('--dim', default=256, type=int)
+
+
+def normalise(x):
+    return (x - x.min()) / max(x.max() - x.min(), 0.0001)
+
+
 args = parser.parse_args()
+
+print(args)
+
+device = torch.device('cuda' if torch.cuda.is_available() and not args.cpu else 'cpu')
+os.environ["WANDB_SILENT"] = "true"
+
+proj = "saliency_segmentation"
+run = wandb.init(project=proj, entity="jessicamarycooper", config=args)
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+labels = ['malignant', 'insufficient', 'other_benign']
+
+att_model = eval(args.model_type)(n_classes=len(labels))
+
+ckpt_path = args.ckpt
+ckpt = torch.load(ckpt_path, map_location=torch.device('cpu'))
+
+ckpt_clean = {}
+for key in ckpt.keys():
+    ckpt_clean.update({key.replace('3', '2'): ckpt[key]})
+
+att_model.load_state_dict(ckpt_clean)
+att_model.relocate()
+att_model.eval()
+feature_model = resnet50_baseline(pretrained=True).to(device)
+feature_model.eval()
+
+
+def model(x):
+    return att_model(feature_model(x))[0]
+
+
+# Load all patches for one slide
+patches = torch.randn(1, 3, args.dim, args.dim)
+
+print(model(patches))
+
+# Get model prediction for each patch
+
+# Get saliency map for each patch
+
+# Stitch map and patches.
