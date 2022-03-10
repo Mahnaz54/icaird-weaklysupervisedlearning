@@ -35,6 +35,7 @@ import torch.nn as nn
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--ckpt', default='../results/Endometrial/Results_Feb2022/patch_256/CLAM_sb/s_0_checkpoint.pt')
+parser.add_argument('--img_path', default='../../../mnt/isilon1/iCAIRD/')
 parser.add_argument('--model_type', default='CLAM_SB')
 parser.add_argument('--dim', default=256, type=int)
 
@@ -75,10 +76,11 @@ def model(x):
     return att_model(feature_model(x))[0]
 
 
-# Load all patches for one slide
-patches = torch.randn(1, 3, args.dim, args.dim).to(device)
+# Load a slide and convert to tensor
 
-print(model(patches))
+
+# Split slide into patches
+
 
 # Get model prediction for each patch
 
