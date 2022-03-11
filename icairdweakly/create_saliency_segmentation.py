@@ -61,11 +61,7 @@ att_model = eval(args.model_type)(n_classes=len(labels))
 ckpt_path = args.ckpt
 ckpt = torch.load(ckpt_path, map_location='cpu')
 
-ckpt_clean = {}
-for key in ckpt.keys():
-    ckpt_clean.update({key.replace('3', '2'): ckpt[key]})
-
-att_model.load_state_dict(ckpt_clean)
+att_model.load_state_dict(ckpt)
 att_model.relocate()
 att_model.eval()
 feature_model = resnet50_baseline(pretrained=True).to(device)
