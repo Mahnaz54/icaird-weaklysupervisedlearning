@@ -59,7 +59,7 @@ labels = ['malignant', 'insufficient', 'other_benign']
 att_model = eval(args.model_type)(n_classes=len(labels))
 
 ckpt_path = args.ckpt
-ckpt = torch.load(ckpt_path, map_location=device)
+ckpt = torch.load(ckpt_path, map_location='cpu')
 
 ckpt_clean = {}
 for key in ckpt.keys():
