@@ -33,7 +33,8 @@ def initiate_model(args, ckpt_path):
 
     #print_network(model)
 
-    ckpt = torch.load(ckpt_path)
+
+    ckpt = torch.load(ckpt_path, map_location=device)
     ckpt_clean = {}
     for key in ckpt.keys():
         if 'instance_loss_fn' in key:
