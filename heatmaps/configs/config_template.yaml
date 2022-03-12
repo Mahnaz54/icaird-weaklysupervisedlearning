@@ -34,7 +34,7 @@ patching_arguments:
   custom_downsample: 1
 model_arguments: 
   # arguments for initializing model from checkpoint
-  ckpt_path: heatmaps/demo/ckpts/s_0_checkpoint.pt
+  ckpt_path: ../heatmaps/demo/ckpts/s_0_checkpoint.pt
   model_type: clam_sb # see utils/eval_utils/
   initiate_fn: initiate_model # see utils/eval_utils/
   model_size: small
