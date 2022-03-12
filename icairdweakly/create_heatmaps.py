@@ -86,7 +86,7 @@ def parse_config_dict(args, config_dict):
 
 
 if __name__ == '__main__':
-    config_path = os.path.join('heatmaps/configs', args.config_file)
+    config_path = os.path.join('../heatmaps/configs', args.config_file)
     config_dict = yaml.safe_load(open(config_path, 'r'))
     config_dict = parse_config_dict(args, config_dict)
 
@@ -157,7 +157,7 @@ if __name__ == '__main__':
                            use_heatmap_args=False)
 
     else:
-        df = pd.read_csv(os.path.join('heatmaps/process_lists', data_args.process_list))
+        df = pd.read_csv(os.path.join('../heatmaps/process_lists', data_args.process_list))
         df = initialize_df(df, def_seg_params, def_filter_params, def_vis_params, def_patch_params,
                            use_heatmap_args=False)
 
@@ -334,12 +334,12 @@ if __name__ == '__main__':
             process_stack.loc[i, 'Pred_{}'.format(c)] = Y_hats_str[c]
             process_stack.loc[i, 'p_{}'.format(c)] = Y_probs[c]
 
-        os.makedirs('heatmaps/results/', exist_ok=True)
+        os.makedirs('../heatmaps/results/', exist_ok=True)
         if data_args.process_list is not None:
-            process_stack.to_csv('heatmaps/results/{}.csv'.format(data_args.process_list.replace('.csv', '')),
+            process_stack.to_csv('../heatmaps/results/{}.csv'.format(data_args.process_list.replace('.csv', '')),
                                  index=False)
         else:
-            process_stack.to_csv('heatmaps/results/{}.csv'.format(exp_args.save_exp_code), index=False)
+            process_stack.to_csv('../heatmaps/results/{}.csv'.format(exp_args.save_exp_code), index=False)
 
         file = h5py.File(block_map_save_path, 'r')
         dset = file['attention_scores']
