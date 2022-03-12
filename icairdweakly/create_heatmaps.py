@@ -28,7 +28,6 @@ parser = argparse.ArgumentParser(description='Heatmap inference script')
 parser.add_argument('--save_exp_code', type=str, default=None, help='experiment code')
 parser.add_argument('--overlap', type=float, default=None)
 parser.add_argument('--config_file', type=str, default="config_template.yaml")
-parser.add_argument('--preset', type=bool, default=False)
 args = parser.parse_args()
 
 
@@ -124,6 +123,7 @@ if __name__ == '__main__':
                                                                                   step_size[1]))
 
     preset = data_args.preset
+
     def_seg_params = {
         'seg_level'  : 6, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
         'exclude_ids': 'none'
@@ -132,7 +132,8 @@ if __name__ == '__main__':
     def_vis_params = {'vis_level': -1, 'line_thickness': 250}
     def_patch_params = {'use_padding': True, 'contour_fn': 'four_pt'}
 
-    if args.preset is not None:
+    """
+    if preset is not None:
         preset_df = pd.read_csv(preset)
         for key in def_seg_params.keys():
             def_seg_params[key] = preset_df.loc[0, key]
@@ -158,9 +159,10 @@ if __name__ == '__main__':
                            use_heatmap_args=False)
 
     else:
-        df = pd.read_csv(os.path.join('../heatmaps/process_lists', data_args.process_list))
-        df = initialize_df(df, def_seg_params, def_filter_params, def_vis_params, def_patch_params,
-                           use_heatmap_args=False)
+    """
+    df = pd.read_csv(os.path.join('../heatmaps/process_lists', data_args.process_list))
+    df = initialize_df(df, def_seg_params, def_filter_params, def_vis_params, def_patch_params,
+                       use_heatmap_args=False)
 
     mask = df['process'] == 1
     process_stack = df[mask].reset_index(drop=True)
