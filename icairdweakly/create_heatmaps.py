@@ -25,7 +25,7 @@ from utils.file_utils import save_hdf5
 from wsi_core.WholeSlideImage import RegionRequest
 
 parser = argparse.ArgumentParser(description='Heatmap inference script')
-parser.add_argument('--save_exp_code', type=str, default=None, help='experiment code')
+parser.add_argument('--save_exp_code', type=str, default='0', help='experiment code')
 parser.add_argument('--overlap', type=float, default=None)
 parser.add_argument('--config_file', type=str, default="config_template.yaml")
 args = parser.parse_args()
