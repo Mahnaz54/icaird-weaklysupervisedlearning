@@ -18,7 +18,7 @@ data_arguments:
   # csv list containing slide_ids (can additionally have seg/patch paramters, class labels, etc.)
   process_list: heatmap_demo_dataset.csv
   # preset file for segmentation/patching
-  preset: None #presets/endometrial.csv
+  preset: presets/endometrial.csv
   # file extention for slides
   slide_ext: .isyntax
   # label dictionary for str: interger mapping (optional)

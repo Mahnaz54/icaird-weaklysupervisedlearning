@@ -28,6 +28,7 @@ parser = argparse.ArgumentParser(description='Heatmap inference script')
 parser.add_argument('--save_exp_code', type=str, default=None, help='experiment code')
 parser.add_argument('--overlap', type=float, default=None)
 parser.add_argument('--config_file', type=str, default="config_template.yaml")
+parser.add_argument('--preset', type=bool, default=False)
 args = parser.parse_args()
 
 
@@ -131,7 +132,7 @@ if __name__ == '__main__':
     def_vis_params = {'vis_level': -1, 'line_thickness': 250}
     def_patch_params = {'use_padding': True, 'contour_fn': 'four_pt'}
 
-    if preset is not None:
+    if args.preset is not None:
         preset_df = pd.read_csv(preset)
         for key in def_seg_params.keys():
             def_seg_params[key] = preset_df.loc[0, key]
