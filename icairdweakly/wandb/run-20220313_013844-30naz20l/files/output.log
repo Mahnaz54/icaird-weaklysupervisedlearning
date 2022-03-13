@@ -1,0 +1,35 @@
+patch_size: 256 x 256, with 0.00 overlap, step size is 256 x 256
+list of slides to process:
+         slide_id  label  x1    x2  y1    y2  scanned_level  process status  ...  keep_ids  exclude_ids    a_t   a_h  max_n_holes vis_level line_thickness  use_padding  contour_fn
+0  IC-EN-00025-01      2   0  2560   0  2560              1        1    tbp  ...      none         none  100.0  16.0           20        -1            250         True     four_pt
+1  IC-EN-00204-01      1   0  2560   0  2560              1        1    tbp  ...      none         none  100.0  16.0           20        -1            250         True     four_pt
+2  IC-EN-00093-01      0   0  2560   0  2560              1        1    tbp  ...      none         none  100.0  16.0           20        -1            250         True     four_pt
+[3 rows x 23 columns]
+initializing model from checkpoint
+ckpt path: ../heatmaps/demo/ckpts/s_0_checkpoint.pt
+Init Model
+Done!
+class labels:[0, 1, 2] Reverse label dict={0: 'malignant', 1: 'insufficient', 2: 'other_benign'}
+processing:  IC-EN-00025-01.isyntax
+top left:  (0, 0)  bot right:  (2560, 2560)
+seg_level: 6
+sthresh: 10
+mthresh: 7
+close: 4
+use_otsu: False
+keep_ids: []
+exclude_ids: []
+a_t: 100.0
+a_h: 16.0
+max_n_holes: 20
+vis_level: -1
+line_thickness: 250
+Initializing WSI object
+Traceback (most recent call last):
+  File "create_saliency_heatmaps.py", line 260, in <module>
+    filter_params=filter_params)
+  File "/home/ubuntu/icaird-weaklysupervisedlearning/icairdweakly/vis_utils/heatmap_utils.py", line 42, in initialize_wsi
+    wsi_object = WholeSlideImage(wsi_path)
+  File "/home/ubuntu/icaird-weaklysupervisedlearning/icairdweakly/wsi_core/WholeSlideImage.py", line 136, in __init__
+    self.pe[self.pe_slide_uuid].open(path, '', 'r', cache_folder)
+RuntimeError: PixelEngine internal error: cannot open file for reading: <../heatmaps/demo/slides/IC-EN-00025-01.isyntax>

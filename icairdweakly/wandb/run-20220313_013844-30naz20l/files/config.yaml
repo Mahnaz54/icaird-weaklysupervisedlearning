@@ -1,0 +1,91 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.12.11
+    code_path: code/icairdweakly/create_saliency_heatmaps.py
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.6.13
+    start_time: 1647135524
+    t:
+      1:
+      - 1
+      - 5
+      - 41
+      - 51
+      2:
+      - 1
+      - 5
+      - 41
+      - 51
+      3:
+      - 16
+      4: 3.6.13
+      5: 0.12.11
+      8:
+      - 5
+data_arguments:
+  desc: null
+  value:
+    data_dir: ../heatmaps/demo/slides/
+    data_dir_key: source
+    label_dict:
+      '0': malignant
+      '1': insufficient
+      '2': other_benign
+    preset: presets/endometrial.csv
+    process_list: heatmap_demo_dataset.csv
+    slide_ext: .isyntax
+exp_arguments:
+  desc: null
+  value:
+    batch_size: 384
+    n_classes: 3
+    production_save_dir: ../heatmaps/heatmap_production_results
+    raw_save_dir: ../heatmaps/heatmap_raw_results
+    save_dir: HEATMAP_OUTPUT
+    save_exp_code: '0'
+heatmap_arguments:
+  desc: null
+  value:
+    alpha: 0.4
+    binarize: false
+    binary_thresh: -1
+    blank_canvas: false
+    blur: false
+    calc_heatmap: false
+    cmap: jet
+    custom_downsample: 1
+    save_ext: jpg
+    save_orig: true
+    use_center_shift: true
+    use_ref_scores: true
+    use_roi: true
+    vis_level: 1
+model_arguments:
+  desc: null
+  value:
+    ckpt_path: ../heatmaps/demo/ckpts/s_0_checkpoint.pt
+    drop_out: true
+    initiate_fn: initiate_model
+    model_size: small
+    model_type: clam_sb
+patching_arguments:
+  desc: null
+  value:
+    custom_downsample: 1
+    overlap: 0.0
+    patch_level: 0
+    patch_size: 256
+sample_arguments:
+  desc: null
+  value:
+    samples:
+    - k: 15
+      mode: topk
+      name: topk_high_attention
+      sample: true
+      seed: 1
