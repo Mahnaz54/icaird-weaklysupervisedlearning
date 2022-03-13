@@ -270,7 +270,7 @@ if __name__ == '__main__':
         if vis_params['vis_level'] < 0:
             best_level = get_best_level_for_downsample(32)
             vis_params['vis_level'] = best_level
-        mask = wsi_object.visWSI(**vis_params, number_contours=True)
+        mask = wsi_object.visWSI(**vis_params, number_contours=True, return_array=True)
         mask.save(mask_path)
         print(mask.shape)
         exit()
