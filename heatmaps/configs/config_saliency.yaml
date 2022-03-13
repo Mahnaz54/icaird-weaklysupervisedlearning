@@ -16,7 +16,7 @@ data_arguments:
   # column name for key in data_dir (if a dict mapping is used)
   data_dir_key: source
   # csv list containing slide_ids (can additionally have seg/patch paramters, class labels, etc.)
-  process_list: heatmap_demo_dataset.csv
+  process_list: saliency_demo_dataset.csv
   # preset file for segmentation/patching
   preset: presets/endometrial.csv
   # file extention for slides

@@ -99,13 +99,6 @@ if __name__ == '__main__':
                            print (value_key + " : " + str(value_value))
            else:
                    print ('\n'+key + " : " + str(value))
-    decision = input('Continue? Y/N ')
-    if decision in ['Y', 'y', 'Yes', 'yes']:
-           pass
-    elif decision in ['N', 'n', 'No', 'NO']:
-           exit()
-    else:
-           raise NotImplementedError
 
     args = config_dict
 
