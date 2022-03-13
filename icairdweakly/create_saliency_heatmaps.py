@@ -125,7 +125,7 @@ if __name__ == '__main__':
     preset = data_args.preset
 
     def_seg_params = {
-        'seg_level'  : 6, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
+        'seg_level' : 6, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
         'exclude_ids': 'none'
     }
     def_filter_params = {'a_t': 100.0, 'a_h': 16.0, 'max_n_holes': 20}
@@ -272,6 +272,9 @@ if __name__ == '__main__':
             vis_params['vis_level'] = best_level
         mask = wsi_object.visWSI(**vis_params, number_contours=True)
         mask.save(mask_path)
+        print(mask.shape)
+        exit()
+        wandb.log({'Mask': wandb.Image(mask)}) #TODO
         features_path = os.path.join(r_slide_save_dir, slide_id + '.pt')
         h5_path = os.path.join(r_slide_save_dir, slide_id + '.h5')
 
