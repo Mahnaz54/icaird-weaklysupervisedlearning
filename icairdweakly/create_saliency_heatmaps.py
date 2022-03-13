@@ -273,6 +273,7 @@ if __name__ == '__main__':
         mask = wsi_object.visWSI(**vis_params, number_contours=True)
         mask.save(mask_path)
         wandb.log({'Mask': wandb.Image(mask)})
+        print('logged mask')
         exit()
         features_path = os.path.join(r_slide_save_dir, slide_id + '.pt')
         h5_path = os.path.join(r_slide_save_dir, slide_id + '.h5')
