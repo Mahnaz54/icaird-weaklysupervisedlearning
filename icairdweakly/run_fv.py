@@ -208,3 +208,5 @@ for l in range(len(labels)):
         wandb.log({
             "{} epoch".format(label): e, "{} lr".format(label): lr, "{} loss".format(label): loss.item(),
             })
+
+run.finish()
