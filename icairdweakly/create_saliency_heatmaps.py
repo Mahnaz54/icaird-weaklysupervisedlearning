@@ -93,18 +93,18 @@ if __name__ == '__main__':
 
     print(config_dict)
     for key, value in config_dict.items():
-           if isinstance(value, dict):
-                   print('\n'+key)
-                   for value_key, value_value in value.items():
-                           print (value_key + " : " + str(value_value))
-           else:
-                   print ('\n'+key + " : " + str(value))
+        if isinstance(value, dict):
+            print('\n' + key)
+            for value_key, value_value in value.items():
+                print(value_key + " : " + str(value_value))
+        else:
+            print('\n' + key + " : " + str(value))
 
     args = config_dict
 
     os.environ["WANDB_SILENT"] = "true"
 
-    proj = "icaird_feature_vis"
+    proj = "icaird_saliency_seg"
     run = wandb.init(project=proj, entity="jessicamarycooper", config=args)
 
     patch_args = argparse.Namespace(**args['patching_arguments'])
@@ -125,16 +125,15 @@ if __name__ == '__main__':
     preset = data_args.preset
 
     def_seg_params = {
-        'seg_level' : 6, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
+        'seg_level'  : 6, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
         'exclude_ids': 'none'
-    }
+        }
     def_filter_params = {'a_t': 100.0, 'a_h': 16.0, 'max_n_holes': 20}
     def_vis_params = {'vis_level': -1, 'line_thickness': 250}
     def_patch_params = {'use_padding': True, 'contour_fn': 'four_pt'}
 
     df = pd.read_csv(os.path.join('../heatmaps/process_lists', data_args.process_list))
-    df = initialize_df(df, def_seg_params, def_filter_params, def_vis_params, def_patch_params,
-                       use_heatmap_args=False)
+    df = initialize_df(df, def_seg_params, def_filter_params, def_vis_params, def_patch_params, use_heatmap_args=False)
 
     mask = df['process'] == 1
     process_stack = df[mask].reset_index(drop=True)
@@ -172,7 +171,7 @@ if __name__ == '__main__':
         'top_left'         : None, 'bot_right': None, 'patch_size': patch_size, 'step_size': patch_size,
         'custom_downsample': patch_args.custom_downsample, 'level': patch_args.patch_level,
         'use_center_shift' : heatmap_args.use_center_shift
-    }
+        }
 
     # start processing files from the process stack one by one
     for i in range(len(process_stack)):
@@ -240,13 +239,13 @@ if __name__ == '__main__':
             seg_params['exclude_ids'] = []
 
         for key, val in seg_params.items():
-                print('{}: {}'.format(key, val))
+            print('{}: {}'.format(key, val))
 
         for key, val in filter_params.items():
-                print('{}: {}'.format(key, val))
+            print('{}: {}'.format(key, val))
 
         for key, val in vis_params.items():
-                print('{}: {}'.format(key, val))
+            print('{}: {}'.format(key, val))
 
         print('Initializing WSI object')
         wsi_object = initialize_wsi(slide_path, seg_mask_path=mask_file, seg_params=seg_params,
@@ -263,7 +262,7 @@ if __name__ == '__main__':
         # the actual patch size for heatmap visualization should be the patch size * downsample factor * custom
         # downsample factor
         vis_patch_size = tuple(
-            (np.array(patch_size) * np.array(wsi_ref_downsample) * patch_args.custom_downsample).astype(int))
+                (np.array(patch_size) * np.array(wsi_ref_downsample) * patch_args.custom_downsample).astype(int))
 
         block_map_save_path = os.path.join(r_slide_save_dir, '{}_blockmap.h5'.format(slide_id))
         mask_path = os.path.join(r_slide_save_dir, '{}_mask.jpg'.format(slide_id))
@@ -272,9 +271,7 @@ if __name__ == '__main__':
             vis_params['vis_level'] = best_level
         mask = wsi_object.visWSI(**vis_params, number_contours=True)
         mask.save(mask_path)
-        wandb.log({'Mask': wandb.Image(mask)})
-        print('logged mask')
-        exit()
+
         features_path = os.path.join(r_slide_save_dir, slide_id + '.pt')
         h5_path = os.path.join(r_slide_save_dir, slide_id + '.h5')
 
@@ -301,8 +298,6 @@ if __name__ == '__main__':
                                                             exp_args.n_classes)
 
         del features
-
-
 
         if not os.path.isfile(block_map_save_path):
             file = h5py.File(h5_path, "r")
@@ -346,6 +341,8 @@ if __name__ == '__main__':
                     patch_request = RegionRequest(tuple(s_coord), patch_args.patch_level,
                                                   (patch_args.patch_size, patch_args.patch_size))
                     patch = np.array(wsi_object.read_region(patch_request))
+                    print(patch.shape)
+                    wandb.log({'Patch': wandb.Image(patch), 'Label': label, 'Pred': Y_hats})
                     cv2.imwrite(os.path.join(sample_save_dir,
                                              '{}_{}_x_{}_y_{}_a_{:.3f}.png'.format(idx, slide_id, s_coord[0],
                                                                                    s_coord[1], s_score)), patch)
@@ -354,7 +351,7 @@ if __name__ == '__main__':
             'top_left'         : top_left, 'bot_right': bot_right, 'patch_size': patch_size, 'step_size': step_size,
             'custom_downsample': patch_args.custom_downsample, 'level': patch_args.patch_level,
             'use_center_shift' : heatmap_args.use_center_shift
-        }
+            }
 
         heatmap_save_name = '{}_blockmap.isyntax'.format(slide_id)
         if os.path.isfile(os.path.join(r_slide_save_dir, heatmap_save_name)):
@@ -364,6 +361,7 @@ if __name__ == '__main__':
                                   alpha=heatmap_args.alpha, use_holes=True, binarize=False, vis_level=-1,
                                   blank_canvas=False, thresh=-1, patch_size=vis_patch_size, convert_to_percentiles=True)
             heatmap.save(os.path.join(r_slide_save_dir, '{}_blockmap.png'.format(slide_id)))
+            wandb.log({'Heatmap': wandb.Image(heatmap)})
             del heatmap
 
     #  save_path = os.path.join(r_slide_save_dir, '{}_{}_roi_{}.h5'.format(slide_id, patch_args.overlap,
