@@ -272,9 +272,8 @@ if __name__ == '__main__':
             vis_params['vis_level'] = best_level
         mask = wsi_object.visWSI(**vis_params, number_contours=True, return_array=True)
         mask.save(mask_path)
-        print(mask.shape)
+        wandb.log({'Mask': wandb.Image(mask)})
         exit()
-        wandb.log({'Mask': wandb.Image(mask)}) #TODO
         features_path = os.path.join(r_slide_save_dir, slide_id + '.pt')
         h5_path = os.path.join(r_slide_save_dir, slide_id + '.h5')
 
