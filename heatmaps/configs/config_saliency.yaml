@@ -57,7 +57,7 @@ heatmap_arguments:
   # whether to shift the 4 default corner points for checking if a patch is inside a foreground contour
   use_center_shift: true
   # whether to only compute heatmap for ROI specified by x1, x2, y1, y2
-  use_roi: 0, 2560, 0, 2560
+  use_roi: true
   # whether to calculate heatmap with specified overlap (by default, coarse heatmap without overlap is always calculated)
   calc_heatmap: false
   # whether to binarize attention scores
