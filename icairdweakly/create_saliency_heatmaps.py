@@ -46,7 +46,7 @@ class ModelUmbrella(nn.Module):
 
 
 # load models
-model_args = {'model_type': 'clam_sb', 'model_size': 'small', 'dropout': 'true'}
+model_args = {'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true'}
 inf_model = initiate_model(model_args, args.ckpt_path)
 feature_extractor = resnet50_baseline(pretrained=True)
 feature_extractor.eval()
