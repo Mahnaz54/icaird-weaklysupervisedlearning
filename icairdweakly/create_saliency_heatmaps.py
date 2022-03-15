@@ -29,7 +29,7 @@ from datasets.wsi_dataset import Wsi_Region
 import wandb
 
 parser = argparse.ArgumentParser(description='Saliency segmentation script')
-parser.add_argument('--slide_path', type=str, default='../../../../IC-EN-00025-01.isyntax',
+parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00033-01.isyntax',
                     help='path to isyntax slide')
 parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0_checkpoint.pt',
                     help='path to model checkpoint')
@@ -55,10 +55,7 @@ feature_extractor.eval()
 model = ModelUmbrella(feature_extractor, inf_model)
 
 # load slide
-wsi_patches = Wsi_Region(WholeSlideImage(args.slide_path))
+wsi = WholeSlideImage(args.slide_path)
 # get patches from slide
-print(len(wsi_patches))
-
-
 
 # for each patch, get saliency map
