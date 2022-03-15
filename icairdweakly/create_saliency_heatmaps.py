@@ -24,6 +24,8 @@ from wsi_core.wsi_utils import sample_rois
 from utils.file_utils import save_hdf5
 from wsi_core.WholeSlideImage import WholeSlideImage
 from wsi_core.WholeSlideImage import RegionRequest
+from datasets.wsi_dataset import Wsi_Region
+
 import wandb
 
 parser = argparse.ArgumentParser(description='Saliency segmentation script')
@@ -50,9 +52,13 @@ model_args = argparse.Namespace(**{'model_type': 'clam_sb', 'model_size': 'small
 inf_model = initiate_model(model_args, args.ckpt_path)
 feature_extractor = resnet50_baseline(pretrained=True)
 feature_extractor.eval()
-
 model = ModelUmbrella(feature_extractor, inf_model)
 
-# load all patches in slide
-wsi_object = WholeSlideImage(args.slide_path)
-print(wsi_object)  # for each patch, get saliency map
+# load slide
+wsi_patches = Wsi_Region(WholeSlideImage(args.slide_path))
+# get patches from slide
+print(len(wsi_patches))
+
+
+
+# for each patch, get saliency map
