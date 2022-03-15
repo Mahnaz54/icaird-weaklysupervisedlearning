@@ -55,10 +55,10 @@ feature_extractor.eval()
 model = ModelUmbrella(feature_extractor, inf_model)
 
 # load slide
-wsi_patches = Wsi_Region(WholeSlideImage(args.slide_path))
+wsi = WholeSlideImage(args.slide_path)
 # get patches from slide
-print(len(wsi_patches))
 
 
 
+IC-EN-00033-01.isyntax IC-EN-00240-01.isyntax IC-EN-00266-01.isyntax
 # for each patch, get saliency map
