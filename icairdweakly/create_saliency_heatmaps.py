@@ -60,10 +60,10 @@ model = ModelUmbrella(feature_extractor, inf_model)
 
 # load slide
 wsi = WholeSlideImage(args.slide_path)
-wsi_img = wsi.visWSI()
+wsi_img = wsi.visWSI(vis_level=8)
 wandb.log({'WSI Image': wandb.Image(wsi_img)})
 wsi.segmentTissue()
-seg_wsi_img = wsi.visWSI()
+seg_wsi_img = wsi.visWSI(vis_level=8)
 wandb.log({'Segmented WSI Image': wandb.Image(wsi_img)})
 # get patches from slide
 
