@@ -44,6 +44,7 @@ class ModelUmbrella(nn.Module):
     def forward(self, x):
         return self.model(self.feature_extractor(x))
 
+
 # load models
 model_args = {'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true'}
 inf_model = initiate_model(model_args, args.ckpt_path)
@@ -54,5 +55,4 @@ model = ModelUmbrella(feature_extractor, inf_model)
 
 # load all patches in slide
 wsi_object = WholeSlideImage(args.slide_path)
-print(wsi_object)
-# for each patch, get saliency map
+print(wsi_object)  # for each patch, get saliency map
