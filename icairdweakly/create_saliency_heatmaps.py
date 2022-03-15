@@ -22,7 +22,7 @@ from wsi_core.batch_process_utils import initialize_df
 from vis_utils.heatmap_utils import initialize_wsi, drawHeatmap, compute_from_patches, hierarchical_perturbation
 from wsi_core.wsi_utils import sample_rois
 from utils.file_utils import save_hdf5
-from wsi_core import WholeSlideImage
+from wsi_core.WholeSlideImage import WholeSlideImage
 from wsi_core.WholeSlideImage import RegionRequest
 import wandb
 
