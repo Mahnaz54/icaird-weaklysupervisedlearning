@@ -35,6 +35,10 @@ parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0
                     help='path to model checkpoint')
 args = parser.parse_args()
 
+proj = "icaird_sal_seg"
+run = wandb.init(project=proj, entity="jessicamarycooper", config=args)
+
+device = torch.device('cuda' if torch.cuda.
 
 class ModelUmbrella(nn.Module):
 
@@ -56,6 +60,16 @@ model = ModelUmbrella(feature_extractor, inf_model)
 
 # load slide
 wsi = WholeSlideImage(args.slide_path)
+wsi_img = wsi.visWSI()
+wandb.log({'WSI Image': wandb.Image(wsi_img)})
+wsi.segmentTissue()
+seg_wsi_img = wsi.visWSI()
+wandb.log({'Segmented WSI Image': wandb.Image(wsi_img)})
 # get patches from slide
 
+
 # for each patch, get saliency map
+
+#stitch patches and saliency map
+
+run.finish()
