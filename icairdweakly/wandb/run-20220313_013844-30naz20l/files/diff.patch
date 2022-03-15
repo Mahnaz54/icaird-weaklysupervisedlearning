@@ -1,0 +1,47 @@
+diff --git a/icairdweakly/datasets/__pycache__/dataset_generic.cpython-36.pyc b/icairdweakly/datasets/__pycache__/dataset_generic.cpython-36.pyc
+index 69465ae..be78a39 100644
+Binary files a/icairdweakly/datasets/__pycache__/dataset_generic.cpython-36.pyc and b/icairdweakly/datasets/__pycache__/dataset_generic.cpython-36.pyc differ
+diff --git a/icairdweakly/datasets/__pycache__/wsi_dataset.cpython-36.pyc b/icairdweakly/datasets/__pycache__/wsi_dataset.cpython-36.pyc
+index c4c19de..07682b0 100644
+Binary files a/icairdweakly/datasets/__pycache__/wsi_dataset.cpython-36.pyc and b/icairdweakly/datasets/__pycache__/wsi_dataset.cpython-36.pyc differ
+diff --git a/icairdweakly/models/__pycache__/model_clam.cpython-36.pyc b/icairdweakly/models/__pycache__/model_clam.cpython-36.pyc
+index 46e51c1..745d6a3 100644
+Binary files a/icairdweakly/models/__pycache__/model_clam.cpython-36.pyc and b/icairdweakly/models/__pycache__/model_clam.cpython-36.pyc differ
+diff --git a/icairdweakly/models/__pycache__/model_mil.cpython-36.pyc b/icairdweakly/models/__pycache__/model_mil.cpython-36.pyc
+index b382ff3..ff58053 100644
+Binary files a/icairdweakly/models/__pycache__/model_mil.cpython-36.pyc and b/icairdweakly/models/__pycache__/model_mil.cpython-36.pyc differ
+diff --git a/icairdweakly/models/__pycache__/resnet_custom.cpython-36.pyc b/icairdweakly/models/__pycache__/resnet_custom.cpython-36.pyc
+index b23c1e3..e7ee088 100644
+Binary files a/icairdweakly/models/__pycache__/resnet_custom.cpython-36.pyc and b/icairdweakly/models/__pycache__/resnet_custom.cpython-36.pyc differ
+diff --git a/icairdweakly/utils/__pycache__/core_utils.cpython-36.pyc b/icairdweakly/utils/__pycache__/core_utils.cpython-36.pyc
+index f75b521..d9de892 100644
+Binary files a/icairdweakly/utils/__pycache__/core_utils.cpython-36.pyc and b/icairdweakly/utils/__pycache__/core_utils.cpython-36.pyc differ
+diff --git a/icairdweakly/utils/__pycache__/eval_utils.cpython-36.pyc b/icairdweakly/utils/__pycache__/eval_utils.cpython-36.pyc
+index 1905f65..e8c8c5f 100644
+Binary files a/icairdweakly/utils/__pycache__/eval_utils.cpython-36.pyc and b/icairdweakly/utils/__pycache__/eval_utils.cpython-36.pyc differ
+diff --git a/icairdweakly/utils/__pycache__/file_utils.cpython-36.pyc b/icairdweakly/utils/__pycache__/file_utils.cpython-36.pyc
+index 3bfc47b..39dfb58 100644
+Binary files a/icairdweakly/utils/__pycache__/file_utils.cpython-36.pyc and b/icairdweakly/utils/__pycache__/file_utils.cpython-36.pyc differ
+diff --git a/icairdweakly/utils/__pycache__/utils.cpython-36.pyc b/icairdweakly/utils/__pycache__/utils.cpython-36.pyc
+index e942641..6635569 100644
+Binary files a/icairdweakly/utils/__pycache__/utils.cpython-36.pyc and b/icairdweakly/utils/__pycache__/utils.cpython-36.pyc differ
+diff --git a/icairdweakly/vis_utils/__pycache__/heatmap_utils.cpython-36.pyc b/icairdweakly/vis_utils/__pycache__/heatmap_utils.cpython-36.pyc
+index 66d5f31..bfbfc86 100644
+Binary files a/icairdweakly/vis_utils/__pycache__/heatmap_utils.cpython-36.pyc and b/icairdweakly/vis_utils/__pycache__/heatmap_utils.cpython-36.pyc differ
+diff --git a/icairdweakly/wsi_core/__pycache__/WholeSlideImage.cpython-36.pyc b/icairdweakly/wsi_core/__pycache__/WholeSlideImage.cpython-36.pyc
+index a15b444..5498280 100644
+Binary files a/icairdweakly/wsi_core/__pycache__/WholeSlideImage.cpython-36.pyc and b/icairdweakly/wsi_core/__pycache__/WholeSlideImage.cpython-36.pyc differ
+diff --git a/icairdweakly/wsi_core/__pycache__/batch_process_utils.cpython-36.pyc b/icairdweakly/wsi_core/__pycache__/batch_process_utils.cpython-36.pyc
+index 34a6495..7202fd6 100644
+Binary files a/icairdweakly/wsi_core/__pycache__/batch_process_utils.cpython-36.pyc and b/icairdweakly/wsi_core/__pycache__/batch_process_utils.cpython-36.pyc differ
+diff --git a/icairdweakly/wsi_core/__pycache__/util_classes.cpython-36.pyc b/icairdweakly/wsi_core/__pycache__/util_classes.cpython-36.pyc
+index ae19769..5c0341b 100644
+Binary files a/icairdweakly/wsi_core/__pycache__/util_classes.cpython-36.pyc and b/icairdweakly/wsi_core/__pycache__/util_classes.cpython-36.pyc differ
+diff --git a/icairdweakly/wsi_core/__pycache__/wsi_utils.cpython-36.pyc b/icairdweakly/wsi_core/__pycache__/wsi_utils.cpython-36.pyc
+index 6260ab4..6f63351 100644
+Binary files a/icairdweakly/wsi_core/__pycache__/wsi_utils.cpython-36.pyc and b/icairdweakly/wsi_core/__pycache__/wsi_utils.cpython-36.pyc differ
+diff --git a/libraries/__pycache__/__init__.cpython-36.pyc b/libraries/__pycache__/__init__.cpython-36.pyc
+old mode 100755
+new mode 100644
+index 4973973..0adbf9b
+Binary files a/libraries/__pycache__/__init__.cpython-36.pyc and b/libraries/__pycache__/__init__.cpython-36.pyc differ

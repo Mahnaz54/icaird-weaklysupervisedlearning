@@ -25,9 +25,9 @@ from utils.file_utils import save_hdf5
 from wsi_core.WholeSlideImage import RegionRequest
 
 parser = argparse.ArgumentParser(description='Heatmap inference script')
-parser.add_argument('--save_exp_code', type=str, default=None, help='experiment code')
+parser.add_argument('--save_exp_code', type=str, default='0', help='experiment code')
 parser.add_argument('--overlap', type=float, default=None)
-parser.add_argument('--config_file', type=str, default="heatmap_config_template.yaml")
+parser.add_argument('--config_file', type=str, default="config_template.yaml")
 args = parser.parse_args()
 
 
@@ -86,7 +86,7 @@ def parse_config_dict(args, config_dict):
 
 
 if __name__ == '__main__':
-    config_path = os.path.join('heatmaps/configs', args.config_file)
+    config_path = os.path.join('../heatmaps/configs', args.config_file)
     config_dict = yaml.safe_load(open(config_path, 'r'))
     config_dict = parse_config_dict(args, config_dict)
 
@@ -123,6 +123,7 @@ if __name__ == '__main__':
                                                                                   step_size[1]))
 
     preset = data_args.preset
+
     def_seg_params = {
         'seg_level'  : 6, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
         'exclude_ids': 'none'
@@ -131,6 +132,7 @@ if __name__ == '__main__':
     def_vis_params = {'vis_level': -1, 'line_thickness': 250}
     def_patch_params = {'use_padding': True, 'contour_fn': 'four_pt'}
 
+    """
     if preset is not None:
         preset_df = pd.read_csv(preset)
         for key in def_seg_params.keys():
@@ -157,9 +159,10 @@ if __name__ == '__main__':
                            use_heatmap_args=False)
 
     else:
-        df = pd.read_csv(os.path.join('heatmaps/process_lists', data_args.process_list))
-        df = initialize_df(df, def_seg_params, def_filter_params, def_vis_params, def_patch_params,
-                           use_heatmap_args=False)
+    """
+    df = pd.read_csv(os.path.join('../heatmaps/process_lists', data_args.process_list))
+    df = initialize_df(df, def_seg_params, def_filter_params, def_vis_params, def_patch_params,
+                       use_heatmap_args=False)
 
     mask = df['process'] == 1
     process_stack = df[mask].reset_index(drop=True)
@@ -334,12 +337,12 @@ if __name__ == '__main__':
             process_stack.loc[i, 'Pred_{}'.format(c)] = Y_hats_str[c]
             process_stack.loc[i, 'p_{}'.format(c)] = Y_probs[c]
 
-        os.makedirs('heatmaps/results/', exist_ok=True)
+        os.makedirs('../heatmaps/results/', exist_ok=True)
         if data_args.process_list is not None:
-            process_stack.to_csv('heatmaps/results/{}.csv'.format(data_args.process_list.replace('.csv', '')),
+            process_stack.to_csv('../heatmaps/results/{}.csv'.format(data_args.process_list.replace('.csv', '')),
                                  index=False)
         else:
-            process_stack.to_csv('heatmaps/results/{}.csv'.format(exp_args.save_exp_code), index=False)
+            process_stack.to_csv('../heatmaps/results/{}.csv'.format(exp_args.save_exp_code), index=False)
 
         file = h5py.File(block_map_save_path, 'r')
         dset = file['attention_scores']

@@ -15,7 +15,8 @@ from sklearn.preprocessing import label_binarize
 import matplotlib.pyplot as plt
 
 def initiate_model(args, ckpt_path):
-    print('Init Model')    
+    print('Init Model')
+    print(args)
     model_dict = {"dropout": args.drop_out, 'n_classes': args.n_classes}
     
     if args.model_size is not None and args.model_type in ['clam_sb', 'clam_mb']:
@@ -33,7 +34,8 @@ def initiate_model(args, ckpt_path):
 
     #print_network(model)
 
-    ckpt = torch.load(ckpt_path)
+
+    ckpt = torch.load(ckpt_path, map_location=device)
     ckpt_clean = {}
     for key in ckpt.keys():
         if 'instance_loss_fn' in key:

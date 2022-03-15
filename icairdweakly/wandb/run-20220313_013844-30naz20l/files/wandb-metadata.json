@@ -1,0 +1,22 @@
+{
+    "os": "Linux-5.4.0-99-generic-x86_64-with-debian-buster-sid",
+    "python": "3.6.13",
+    "heartbeatAt": "2022-03-13T01:38:45.827703",
+    "startedAt": "2022-03-13T01:38:44.781620",
+    "docker": null,
+    "cpu_count": 8,
+    "cuda": "10.2.89",
+    "args": [],
+    "state": "running",
+    "program": "create_saliency_heatmaps.py",
+    "codePath": "icairdweakly/create_saliency_heatmaps.py",
+    "git": {
+        "remote": "https://github.com/Mahnaz54/icaird-weaklysupervisedlearning.git",
+        "commit": "ea9cc6b63af77447774b47f206c9c96d648feab6"
+    },
+    "email": "jessicamarycooper@gmail.com",
+    "root": "/home/ubuntu/icaird-weaklysupervisedlearning",
+    "host": "27b7f340dedc",
+    "username": "ubuntu",
+    "executable": "/home/ubuntu/anaconda3/envs/icaird-weaklysupervisedlearning/bin/python"
+}
