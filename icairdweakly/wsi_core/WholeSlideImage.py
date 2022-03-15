@@ -137,8 +137,9 @@ class WholeSlideImage(object):
         self._view = self.pe[self.pe_slide_uuid].SourceView()
         levels = self.pe[self.pe_slide_uuid].numLevels() + 1
         self.level_dimensions = [self._get_valid_range(l) for l in range(levels)]
-              
-        
+
+        print(levels, self.level_dimensions)
+
         self.contours_tissue = None
         self.contours_tumor = None
         self.seg_level = None
@@ -380,7 +381,7 @@ class WholeSlideImage(object):
 
     def visWSI(self, vis_level=0, color = (0,255,0), hole_color = (0,0,255), annot_color=(255,0,0), 
                     line_thickness=12, max_size=None, top_left=None, bot_right=None, custom_downsample=1, view_slide_only=False,
-                    number_contours=False, seg_display=True, annot_display=True):  
+                    number_contours=False, seg_display=True, annot_display=True):
         
         lvl = int(vis_level)
         downsample = tuple(ele1 // ele2 for ele1, ele2 in zip(self.level_dimensions[0], self.level_dimensions[lvl]))
