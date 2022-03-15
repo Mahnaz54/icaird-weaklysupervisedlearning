@@ -38,7 +38,7 @@ args = parser.parse_args()
 proj = "icaird_sal_seg"
 run = wandb.init(project=proj, entity="jessicamarycooper", config=args)
 
-device = torch.device('cuda' if torch.cuda.
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class ModelUmbrella(nn.Module):
 
