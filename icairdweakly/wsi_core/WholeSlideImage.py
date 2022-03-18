@@ -371,6 +371,8 @@ class WholeSlideImage(object):
         else:
             contour_ids = set(np.arange(len(self.contours_tissue))) - set(exclude_ids)
 
+        print('contour_ids: ', contour_ids)
+
         self.contours_tissue = [self.contours_tissue[i] for i in contour_ids]
         self.holes_tissue = [self.holes_tissue[i] for i in contour_ids]
     # hole_color = blue

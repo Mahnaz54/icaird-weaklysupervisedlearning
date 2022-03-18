@@ -73,13 +73,12 @@ print('Segmenting WSI...')
 print(seg_params)
 
 wsi.segmentTissue(**seg_params, filter_params={'a_t': 100.0, 'a_h': 16.0, 'max_n_holes': 20})
+print(wsi.contours_tissue)
 
 print('Visualising WSI...')
 img = wsi.visWSI(vis_level=6)
 wandb.log({'Image': wandb.Image(img)})
 # get patches from slide
-
-print(wsi.contours_tissue)
 
 print('Getting patches...')
 
