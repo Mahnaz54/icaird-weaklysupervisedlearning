@@ -65,14 +65,14 @@ model = ModelUmbrella(feature_extractor, inf_model)
 print('Loading WSI...')
 wsi = WholeSlideImage(args.slide_path)
 seg_params = {
-    'seg_level' : args.level, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
+    'seg_level' : -1, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
     'exclude_ids': 'none'
     }
 
 print('Segmenting WSI...')
 print(seg_params)
 
-wsi.segmentTissue(**seg_params, filter_params={'a_t': 100.0, 'a_h': 16.0, 'max_n_holes': 20})
+wsi.segmentTissue(**seg_params)
 print(wsi.contours_tissue)
 
 print('Visualising WSI...')

@@ -363,7 +363,7 @@ class WholeSlideImage(object):
 
         print(contours)
         print(hierarchy)
-        print(len(contours), len(hierarchy))
+        print(len(contours), hierarchy.shape())
 
         if filter_params: foreground_contours, hole_contours = _filter_contours(contours, hierarchy, filter_params)  # Necessary for filtering out artifacts
         self.contours_tissue = self.scaleContourDim(foreground_contours, scale)
