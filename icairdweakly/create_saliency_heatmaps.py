@@ -64,7 +64,7 @@ model = ModelUmbrella(feature_extractor, inf_model)
 print('Loading WSI...')
 wsi = WholeSlideImage(args.slide_path)
 print('Segmenting WSI...')
-wsi.segmentTissue({'seg_level':int(math.log(args.downsample, 2))})
+wsi.segmentTissue(seg_level=int(math.log(args.downsample, 2)))
 print('Visualising WSI...')
 img = wsi.visWSI()
 
