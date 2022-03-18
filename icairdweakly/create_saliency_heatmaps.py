@@ -59,9 +59,11 @@ feature_extractor.eval()
 model = ModelUmbrella(feature_extractor, inf_model)
 
 # load slide
+print('Loading WSI...')
 wsi = WholeSlideImage(args.slide_path)
+print('Segmenting WSI...')
 wsi.segmentTissue()
-
+print('Visualising WSI...')
 img = wsi.visWSI()
 
 wandb.log({'Image':img})
