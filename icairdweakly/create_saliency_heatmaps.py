@@ -67,13 +67,13 @@ wsi = WholeSlideImage(args.slide_path)
 print('Segmenting WSI...')
 
 seg_params = {
-    'seg_level'  : 6, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
+    'seg_level'  : 1, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
     'exclude_ids': 'none'
     }
 
 wsi.segmentTissue(**seg_params, filter_params={'a_t': 100.0, 'a_h': 16.0, 'max_n_holes': 20})
 print('Visualising WSI...')
-img = wsi.visWSI(vis_level=6)
+img = wsi.visWSI(vis_level=1)
 print(img)
 wandb.log({'Image': wandb.Image(img)})
 # get patches from slide
