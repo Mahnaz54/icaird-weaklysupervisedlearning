@@ -42,6 +42,7 @@ run = wandb.init(project=proj, entity="jessicamarycooper", config=args)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
 class ModelUmbrella(nn.Module):
 
     def __init__(self, feature_extractor, inf_model):
@@ -54,7 +55,7 @@ class ModelUmbrella(nn.Module):
 
 
 # load models
-model_args = argparse.Namespace(**{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes':3})
+model_args = argparse.Namespace(**{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
 inf_model = initiate_model(model_args, args.ckpt_path)
 feature_extractor = resnet50_baseline(pretrained=True)
 feature_extractor.eval()
@@ -64,16 +65,22 @@ model = ModelUmbrella(feature_extractor, inf_model)
 print('Loading WSI...')
 wsi = WholeSlideImage(args.slide_path)
 print('Segmenting WSI...')
-wsi.segmentTissue(seg_level=int(math.log(args.downsample, 2)))
+
+seg_params = {
+    'seg_level'  : 6, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
+    'exclude_ids': 'none'
+    }
+
+wsi.segmentTissue(**seg_params, filter_params={'a_t': 100.0, 'a_h': 16.0, 'max_n_holes': 20})
 print('Visualising WSI...')
 img = wsi.visWSI()
 
-wandb.log({'Image':img})
+wandb.log({'Image': img})
 # get patches from slide
 
 
 # for each patch, get saliency map
 
-#stitch patches and saliency map
+# stitch patches and saliency map
 
 run.finish()
