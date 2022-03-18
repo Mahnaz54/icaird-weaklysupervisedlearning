@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import numpy as np
 
+import math
 import argparse
 import cv2
 import torch
@@ -33,6 +34,7 @@ parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/I
                     help='path to isyntax slide')
 parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0_checkpoint.pt',
                     help='path to model checkpoint')
+parser.add_argument('--downsample', type=int, default=32)
 args = parser.parse_args()
 
 proj = "icaird_sal_seg"
@@ -62,7 +64,7 @@ model = ModelUmbrella(feature_extractor, inf_model)
 print('Loading WSI...')
 wsi = WholeSlideImage(args.slide_path)
 print('Segmenting WSI...')
-wsi.segmentTissue()
+wsi.segmentTissue({'seg_level':int(math.log(args.downsample, 2))})
 print('Visualising WSI...')
 img = wsi.visWSI()
 
