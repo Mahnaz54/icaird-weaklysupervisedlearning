@@ -360,7 +360,11 @@ class WholeSlideImage(object):
         # Find and filter contours
         contours, hierarchy = cv2.findContours(img_otsu, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE) # Find contours 
         hierarchy = np.squeeze(hierarchy, axis=(0,))[:,2:]
-        
+
+        print(contours)
+        print(hierarchy)
+        print(len(contours), len(hierarchy))
+
         if filter_params: foreground_contours, hole_contours = _filter_contours(contours, hierarchy, filter_params)  # Necessary for filtering out artifacts
         self.contours_tissue = self.scaleContourDim(foreground_contours, scale)
         self.holes_tissue = self.scaleHolesDim(hole_contours, scale)
@@ -370,8 +374,6 @@ class WholeSlideImage(object):
             contour_ids = set(keep_ids) - set(exclude_ids)
         else:
             contour_ids = set(np.arange(len(self.contours_tissue))) - set(exclude_ids)
-
-        print('contour_ids: ', contour_ids)
 
         self.contours_tissue = [self.contours_tissue[i] for i in contour_ids]
         self.holes_tissue = [self.holes_tissue[i] for i in contour_ids]
