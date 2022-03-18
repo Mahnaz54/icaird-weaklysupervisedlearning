@@ -65,7 +65,7 @@ model = ModelUmbrella(feature_extractor, inf_model)
 print('Loading WSI...')
 wsi = WholeSlideImage(args.slide_path)
 seg_params = {
-    'seg_level' : -1, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
+    'seg_level' : args.level, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
     'exclude_ids': 'none'
     }
 
