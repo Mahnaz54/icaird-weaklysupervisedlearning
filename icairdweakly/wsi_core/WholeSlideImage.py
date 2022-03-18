@@ -138,8 +138,6 @@ class WholeSlideImage(object):
         levels = self.pe[self.pe_slide_uuid].numLevels() + 1
         self.level_dimensions = [self._get_valid_range(l) for l in range(levels)]
 
-        print(levels, self.level_dimensions)
-
         self.contours_tissue = None
         self.contours_tumor = None
         self.seg_level = None
