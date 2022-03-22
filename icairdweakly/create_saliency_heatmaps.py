@@ -78,7 +78,7 @@ with h5py.File(args.patch_path, 'r') as f:
     for i, coord in enumerate(coords):
         img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size,patch_size))))
         pred = model(torch.Tensor(img.unsqueeze(0)))
-        print(torch.round(pred, 2))
+        print(torch.round(pred))
         wandb.log({'Patch'.format(i): wandb.Image(img, caption=pred)})
 
 
