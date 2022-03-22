@@ -60,6 +60,7 @@ class ModelUmbrella(nn.Module):
 
 # load models
 model_args = argparse.Namespace(**{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
+label_dict = {'malignant':0, 'insufficient':1, 'other_benign':2}
 inf_model = initiate_model(model_args, args.ckpt_path)
 feature_extractor = resnet50_baseline(pretrained=True)
 feature_extractor.eval()
@@ -77,7 +78,7 @@ with h5py.File(args.patch_path, 'r') as f:
     for i, coord in enumerate(coords):
         img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size,patch_size))))
         pred = model(torch.Tensor(img.unsqueeze(0)))
-        print(pred)
+        print(torch.round(pred, 2))
         wandb.log({'Patch'.format(i): wandb.Image(img, caption=pred)})
 
 
