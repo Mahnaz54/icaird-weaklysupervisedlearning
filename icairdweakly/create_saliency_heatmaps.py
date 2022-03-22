@@ -42,6 +42,7 @@ parser.add_argument('--level', type=int, default=6)
 parser.add_argument('--max_patches', type=int, default=-1)
 parser.add_argument('--hipe_max_depth', type=int, default=2)
 parser.add_argument('--hipe_perturbation_type', default='mean')
+parser.add_argument('--hipe_interp_mode', default='nearest')
 
 args = parser.parse_args()
 
@@ -97,6 +98,7 @@ with h5py.File(args.patch_path, 'r') as f:
         for c in range(num_classes):
             hipe_maps.append(
                 hierarchical_perturbation(model, img.unsqueeze(0), c, perturbation_type=args.hipe_perturbation_type,
+                                          interp_mode=args.hipe_interp_mode,
                                           verbose=True,
                                           max_depth=args.hipe_max_depth)[0])
         wandb.log({
