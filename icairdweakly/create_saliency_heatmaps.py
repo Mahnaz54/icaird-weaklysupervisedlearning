@@ -54,7 +54,7 @@ class ModelUmbrella(nn.Module):
         self.inf_model = inf_model
 
     def forward(self, x):
-        return self.model(self.feature_extractor(x))
+        return self.inf_model(self.feature_extractor(x))
 
 
 # load models
