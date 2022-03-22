@@ -221,9 +221,9 @@ def hierarchical_perturbation(model, input, target, vis=False, interp_mode='near
                 masks = F.interpolate(masks, (input_y_dim, input_x_dim), mode=interp_mode)
 
                 if perturbation_type == 'fade':
-                    perturbed_outputs = diff_func(output - model(input * masks)[:, target])
+                    perturbed_outputs = diff_func(output - model(input * masks)[0][:, target])
                 else:
-                    perturbed_outputs = diff_func(output - model(b_imgs)[:, target])
+                    perturbed_outputs = diff_func(output - model(b_imgs)[0][:, target])
 
                 if len(list(perturbed_outputs.shape)) == 1:
                     sal = perturbed_outputs.reshape(-1, 1, 1, 1) * torch.abs(masks - 1)
