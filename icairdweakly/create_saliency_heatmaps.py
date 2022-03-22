@@ -27,6 +27,7 @@ from wsi_core.WholeSlideImage import WholeSlideImage
 from wsi_core.WholeSlideImage import RegionRequest
 from datasets.wsi_dataset import Wsi_Region
 from create_patches import seg_and_patch
+from datasets.wsi_dataset import default_transforms
 
 import wandb
 
@@ -73,7 +74,7 @@ with h5py.File(args.patch_path, 'r') as f:
     patch_level = coords.attrs['patch_level']
     patch_size = coords.attrs['patch_size']
     for i, coord in enumerate(coords):
-        img = np.array(wsi.read_region(RegionRequest(coord, patch_level, (patch_size,patch_size))))
+        img = default_transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size,patch_size))))
         print(img.shape)
         pred = model(torch.Tensor(img))
         wandb.log({'Patch {}'.format(i): wandb.Image(img), 'Pred {}'.format(i):pred})
