@@ -64,9 +64,19 @@ feature_extractor = resnet50_baseline(pretrained=True)
 feature_extractor.eval()
 model = ModelUmbrella(feature_extractor, inf_model)
 
+# load WSI
+wsi = WholeSlideImage(args.slide_path, hdf5_file = None)
+
 # load patch data
 with h5py.File(args.patch_path, 'r') as f:
-    print(f)
+    coords = f['coords']
+    patch_level = coords.attrs['patch_level']
+    patch_size = coords.attrs['patch_size']
+    for i, coord in enumerate(coords):
+        img = np.array(wsi.read_region(RegionRequest(coord, patch_level, (patch_size,patch_size))))
+        pred = model(img)
+        wandb.log({'Patch {}'.format(i): wandb.Image(img), 'Pred {}'.format(i):pred})
+
 
 
 
