@@ -117,7 +117,7 @@ def normalise(x):
     return (x - x.min()) / max(x.max() - x.min(), 0.0001)
 
 
-def hierarchical_perturbation(model, input, target, vis=False, interp_mode='nearest', resize=None, batch_size=32,
+def hierarchical_perturbation(model, input, target, interp_mode='nearest', resize=None, batch_size=32,
                               perturbation_type='mean', threshold_mode='mid-range', return_info=False,
                               diff_func=torch.relu, depth_bound=2, verbose=True):
     if verbose: print('\nBelieve the HiPe!')
@@ -231,14 +231,6 @@ def hierarchical_perturbation(model, input, target, vis=False, interp_mode='near
                     sal = perturbed_outputs * torch.abs(masks - 1)
 
                 saliency += torch.sum(sal, dim=(0, 1))
-
-            if vis:
-                plt.figure(figsize=(8, 4))
-                plt.title('Depth: {}, {} x {} Mask\nThreshold: {:.1f}'.format(depth, num_cells, num_cells, threshold))
-                plt.imshow(np.transpose((normalise(input) * normalise(saliency))[0], (1, 2, 0)))
-                plt.show()  # plt.figure(figsize=(8, 4))  # pd.Series(normalise(saliency).reshape(-1)).plot(  #
-                # label='Saliency ({})'.format(threshold_mode))  # pd.Series(normalise(input).reshape(-1)).plot(  #
-                # label='Actual')  # plt.legend()  # plt.show()
 
         if verbose: print('Used {} masks in total.'.format(total_masks))
         if resize is not None:
