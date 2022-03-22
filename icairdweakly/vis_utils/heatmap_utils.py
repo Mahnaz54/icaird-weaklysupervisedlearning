@@ -117,7 +117,7 @@ def normalise(x):
     return (x - x.min()) / max(x.max() - x.min(), 0.0001)
 
 
-def hierarchical_perturbation(model, input, target, interp_mode='nearest', resize=None, batch_size=32,
+def hierarchical_perturbation(model, input, target, interp_mode='nearest', resize=None, batch_size=1,
                               perturbation_type='mean', threshold_mode='mid-range', return_info=False,
                               diff_func=torch.relu, max_depth=-1, verbose=True):
     if verbose: print('\nBelieve the HiPe!')
