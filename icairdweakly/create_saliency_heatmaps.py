@@ -90,7 +90,7 @@ with h5py.File(args.patch_path, 'r') as f:
         print(i, logits)
         hipe_maps = []
         for cls_logit in range(len(logits)):
-            hipe_maps.append(hierarchical_perturbation(model, img, cls_logit, verbose=True))
+            hipe_maps.append(hierarchical_perturbation(model, img.unsqueeze(0), cls_logit, verbose=True))
         wandb.log({'Patch'.format(i): wandb.Image(img, caption=str(logits)), 'HiPe': wandb.Image(hipe_maps)})
 
 
