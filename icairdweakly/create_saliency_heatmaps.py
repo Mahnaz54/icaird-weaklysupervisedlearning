@@ -26,6 +26,7 @@ from utils.file_utils import save_hdf5
 from wsi_core.WholeSlideImage import WholeSlideImage
 from wsi_core.WholeSlideImage import RegionRequest
 from datasets.wsi_dataset import Wsi_Region
+from create_patches import seg_and_patch
 
 import wandb
 
@@ -33,6 +34,8 @@ parser = argparse.ArgumentParser(description='Saliency segmentation script')
 parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00033-01.isyntax',
                     help='path to isyntax slide')
 parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0_checkpoint.pt',
+                    help='path to model checkpoint')
+parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
                     help='path to model checkpoint')
 parser.add_argument('--level', type=int, default=6)
 args = parser.parse_args()
@@ -61,30 +64,9 @@ feature_extractor = resnet50_baseline(pretrained=True)
 feature_extractor.eval()
 model = ModelUmbrella(feature_extractor, inf_model)
 
-# load slide
-print('Loading WSI...')
-wsi = WholeSlideImage(args.slide_path)
-seg_params = {
-    'seg_level' : args.level, 'sthresh': 10, 'mthresh': 7, 'close': 4, 'use_otsu': False, 'keep_ids': 'none',
-    'exclude_ids': 'none'
-    }
-
-print('Segmenting WSI...')
-print(seg_params)
-
-wsi.segmentTissue(**seg_params)
-print(wsi.contours_tissue)
-
-print('Visualising WSI...')
-
-img = wsi.visWSI(vis_level=6)
-wandb.log({'Image': wandb.Image(img)})
-# get patches from slide
-
-print('Getting patches...')
-
-patches_dataset = Wsi_Region(wsi)
-
+# load patch data
+with h5py.File(args.patch_path, 'r') as f:
+    print(f)
 
 
 
