@@ -39,6 +39,8 @@ parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0
 parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
                     help='path to model checkpoint')
 parser.add_argument('--level', type=int, default=6)
+parser.add_argument('--max_patches', type=int, default=-1)
+
 args = parser.parse_args()
 
 proj = "icaird_sal_seg"
@@ -71,17 +73,25 @@ model = ModelUmbrella(feature_extractor, inf_model)
 wsi = WholeSlideImage(args.slide_path, hdf5_file = None)
 transforms = default_transforms()
 
+# get overall prediction # TODO
+
 # load patch data
 with h5py.File(args.patch_path, 'r') as f:
     coords = f['coords']
     patch_level = coords.attrs['patch_level']
     patch_size = coords.attrs['patch_size']
     for i, coord in enumerate(coords):
+        if i == args.max_patches:
+            run.finish()
+            exit()
         img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size,patch_size))))
         logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
         logits = np.round(logits.detach().numpy(), 2)[0]
         print(i, logits)
-        wandb.log({'Patch'.format(i): wandb.Image(img, caption=str(logits))})
+        hipe_maps = []
+        for cls_logit in range(len(logits)):
+            hipe_maps.append(hierarchical_perturbation(model, img, cls_logit, verbose=True))
+        wandb.log({'Patch'.format(i): wandb.Image(img, caption=str(logits)), 'HiPe': wandb.Image(hipe_maps)})
 
 
 
