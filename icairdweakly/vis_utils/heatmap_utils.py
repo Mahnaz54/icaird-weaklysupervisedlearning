@@ -138,7 +138,7 @@ def hierarchical_perturbation(model, input, target, vis=False, interp_mode='near
         thresholds_d_list = []
         masks_d_list = []
 
-        output = model(input)[:, target]
+        output = model(input)[0][:, target]
 
         if perturbation_type == 'blur':
             pre_b_image = blur(input.clone().cpu()).to(dev)
