@@ -192,7 +192,7 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
                             b_image[:, :, y1 * y_cell_dim:y2 * y_cell_dim,
                             x1 * x_cell_dim:x2 * x_cell_dim] = pre_b_image[:, :, y1 * y_cell_dim:y2 * y_cell_dim,
                                                                x1 * x_cell_dim:x2 * x_cell_dim]
-                            b_list.add(b_image)
+                            b_list.append(b_image)
 
                         if perturbation_type == 'mean':
                             b_image = input.clone()
