@@ -44,6 +44,8 @@ parser.add_argument('--hipe_depth_bound', type=int, default=2)
 
 args = parser.parse_args()
 
+print(args)
+
 proj = "icaird_sal_seg"
 run = wandb.init(project=proj, entity="jessicamarycooper", config=args)
 
