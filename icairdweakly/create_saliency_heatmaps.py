@@ -40,7 +40,7 @@ parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/
                     help='path to model checkpoint')
 parser.add_argument('--level', type=int, default=6)
 parser.add_argument('--max_patches', type=int, default=-1)
-parser.add_argument('--hipe_depth_bound', type=int, default=2)
+parser.add_argument('--hipe_max_depth', type=int, default=2)
 
 args = parser.parse_args()
 
@@ -96,7 +96,7 @@ with h5py.File(args.patch_path, 'r') as f:
         for c in range(num_classes):
             hipe_maps.append(
                 hierarchical_perturbation(model, img.unsqueeze(0), c, verbose=True,
-                                          depth_bound=args.hipe_depth_bound)[0])
+                                          max_depth=args.hipe_max_depth)[0])
         wandb.log({
                       'Patch'.format(i): wandb.Image(img, caption=str(logits)),
                       'HiPe'           : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)]

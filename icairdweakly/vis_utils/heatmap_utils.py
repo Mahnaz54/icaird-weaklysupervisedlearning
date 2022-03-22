@@ -119,7 +119,7 @@ def normalise(x):
 
 def hierarchical_perturbation(model, input, target, interp_mode='nearest', resize=None, batch_size=32,
                               perturbation_type='mean', threshold_mode='mid-range', return_info=False,
-                              diff_func=torch.relu, depth_bound=2, verbose=True):
+                              diff_func=torch.relu, max_depth=-1, verbose=True):
     if verbose: print('\nBelieve the HiPe!')
     with torch.no_grad():
         dev = input.device
@@ -130,7 +130,9 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
         total_masks = 0
         depth = 0
         num_cells = int(max(np.ceil(np.log2(dim)), 1) / 2)
-        max_depth = int(np.log2(dim / num_cells)) - depth_bound
+        base_max_depth = int(np.log2(dim / num_cells)) - 2
+        if max_depth == -1 or max_depth > base_max_depth + 2:
+            max_depth = base_max_depth
         if verbose: print('Max depth: {}'.format(max_depth))
         saliency = torch.zeros((1, 1, input_y_dim, input_x_dim), device=dev)
         max_batch = batch_size
