@@ -234,7 +234,7 @@ if __name__ == '__main__':
         coords = f['coords']
         patch_level = coords.attrs['patch_level']
         patch_size = coords.attrs['patch_size']
-        _, xdim, _, ydim = wsi.level_dimensions[patch_level]
+        _, ydim, _, xdim = wsi.level_dimensions[patch_level]
         xdim, ydim = xdim // args.downsample, ydim // args.downsample
         min_x, min_y, max_x, max_y = xdim, ydim, 0, 0
 
@@ -273,7 +273,7 @@ if __name__ == '__main__':
                 })
                 })
 
-            x, y = coord // args.downsample
+            y, x = coord // args.downsample
             if x< min_x: min_x = x
             if y < min_y: min_y = y
             x1, y1 = x+pdim, y+pdim
