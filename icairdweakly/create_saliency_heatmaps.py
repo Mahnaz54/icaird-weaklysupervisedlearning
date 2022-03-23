@@ -290,6 +290,7 @@ if __name__ == '__main__':
         full_hipe_seg = torch.zeros((max_x, max_y)) + num_classes
 
         print('Stitching...')
+        print(all_coords)
 
         for i in range(len(all_imgs)):
             print('{}/{}'.format(i+1, len(all_imgs)))
@@ -298,6 +299,7 @@ if __name__ == '__main__':
             hipe_seg = all_hipe_segs[i]
             x, x1, y, y1 = all_coords[i]
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
+            print('Coords: ', x, x1, y, y1)
 
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
 
