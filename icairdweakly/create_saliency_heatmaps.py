@@ -1,35 +1,19 @@
 from __future__ import print_function
 
 import numpy as np
-
-import math
 import argparse
-import cv2
 import torch
 import torch.nn as nn
-import pdb
-import os
-import pandas as pd
 from utils.utils import *
-from math import floor
 from utils.eval_utils import initiate_model as initiate_model
-from models.model_clam import CLAM_MB, CLAM_SB
 from models.resnet_custom import resnet50_baseline
-from types import SimpleNamespace
-from collections import namedtuple
 import h5py
-import yaml
-from wsi_core.batch_process_utils import initialize_df
-from vis_utils.heatmap_utils import initialize_wsi, drawHeatmap, compute_from_patches
-from wsi_core.wsi_utils import sample_rois
-from utils.file_utils import save_hdf5
-from wsi_core.WholeSlideImage import WholeSlideImage
-from wsi_core.WholeSlideImage import RegionRequest
-from datasets.wsi_dataset import Wsi_Region
-from create_patches import seg_and_patch
+from wsi_core.WholeSlideImage import WholeSlideImage, RegionRequest
 from datasets.wsi_dataset import default_transforms
 import torch.nn.functional as F
 import wandb
+from scipy.ndimage.filters import gaussian_filter
+
 
 
 def gkern(klen, nsig):
@@ -242,7 +226,8 @@ if __name__ == '__main__':
         all_coords = []
 
         max_patches = len(coords) if args.max_patches == -1 else args.max_patches
-        wandb.log({'Patch Level':patch_level, 'Patch Size':patch_size, 'Num Patches': max_patches})
+        wandb.log({'Patch Level':patch_level, 'Patch Size':patch_size, 'Num Patches': max_patches,
+                   'Slide': args.slide_path.split('/')[-1].split('.')[0]})
 
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
@@ -326,7 +311,7 @@ if __name__ == '__main__':
             })
 
         if args.save_to_file:
-            pass
+
         print('Done!')
 
     run.finish()

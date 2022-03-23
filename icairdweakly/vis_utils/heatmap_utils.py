@@ -17,7 +17,6 @@ import math
 from utils.file_utils import save_hdf5
 from scipy.stats import percentileofscore
 from matplotlib import pyplot as plt
-from scipy.ndimage.filters import gaussian_filter
 
 device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
