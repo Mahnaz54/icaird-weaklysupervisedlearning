@@ -80,9 +80,8 @@ model = ModelUmbrella(feature_extractor, inf_model)
 # load WSI
 wsi = WholeSlideImage(args.slide_path, hdf5_file=None)
 transforms = default_transforms()
-
-# get overall prediction # TODO
-
+print(wsi.level_dimensions)
+exit()
 # load patch data
 with h5py.File(args.patch_path, 'r') as f:
     coords = f['coords']
