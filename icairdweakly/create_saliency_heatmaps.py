@@ -187,14 +187,14 @@ class ModelUmbrella(nn.Module):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Saliency segmentation script')
-    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00260-01.isyntax',
+    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00033-01.isyntax',
                         help='path to isyntax slide')
     parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0_checkpoint.pt',
                         help='path to model checkpoint')
-    parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00260-01.h5',
+    parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
                         help='path to model checkpoint')
     parser.add_argument('--max_patches', type=int, default=-1)
-    parser.add_argument('--hipe_max_depth', type=int, default=2)
+    parser.add_argument('--hipe_max_depth', type=int, default=1)
     parser.add_argument('--hipe_perturbation_type', default='mean')
     parser.add_argument('--hipe_interp_mode', default='nearest')
     parser.add_argument('--downsample', type=int, default=8)
@@ -302,7 +302,6 @@ if __name__ == '__main__':
             hipe_seg = all_hipe_segs[i]
             x, x1, y, y1 = all_coords[i]
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
-            print('Coords: ', x, x1, y, y1)
 
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
 
@@ -328,5 +327,6 @@ if __name__ == '__main__':
 
         if args.save_to_file:
             pass
+        print('Done!')
 
     run.finish()
