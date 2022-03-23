@@ -265,19 +265,21 @@ if __name__ == '__main__':
                 })
                 })
 
-            print(len(hipe_maps), hipe_maps[0].shape, len(hipe_maps), full_hipe_maps[0].shape)
+            print(len(hipe_maps), hipe_maps[0].shape, len(full_hipe_maps), full_hipe_maps[0].shape)
 
-            coord = coord // args.downsample
-            full_img[:, coord[0]: coord[0] + pdim, coord[1]:coord[1] + pdim] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
+            print(coord)
+            x, y = coord // args.downsample
+            x1, y1 = x+pdim, y+pdim
+            print(x, x1, y, y1)
+            full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
             for n in range(num_classes):
                 print(F.interpolate(hipe_maps[n],(pdim, pdim)).shape)
-                full_hipe_maps[n][coord[0]: coord[0] + pdim, coord[1]:coord[1] + pdim] = F.interpolate(hipe_maps[n],
-                                                                                                   (pdim, pdim))[0][0]
-            full_hipe_seg[coord[0]: coord[0] + pdim, coord[1]:coord[1] + pdim] = F.interpolate(hipe_seg.unsqueeze(
-                    0).unsqueeze(0), (pdim, pdim))[0][0]
+                full_hipe_maps[n][x: x1, y:y1] = F.interpolate(hipe_maps[n],(pdim, pdim))[0][0]
+                full_hipe_seg[x:x1, y:y1] = F.interpolate(hipe_seg.unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
 
         wandb.log({
-            'Full HiPe'             : [wandb.Image(full_hipe[h], caption=label_list[h]) for h in range(num_classes)],
+            'Full HiPe'             : [wandb.Image(full_hipe_maps[h], caption=label_list[h]) for h in range(
+                    num_classes)],
             'Full HiPe Segmentation': wandb.Image(full_img, masks={
                 "predictions": {
                     "mask_data": full_hipe_seg.numpy(), "class_labels": class_labels
