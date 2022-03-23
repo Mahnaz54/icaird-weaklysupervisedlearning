@@ -231,7 +231,7 @@ if __name__ == '__main__':
     transforms = default_transforms()
     # load patch data
     with h5py.File(args.patch_path, 'r') as f:
-        coords = f['coords']
+        coords = f['coords'].sorted()
         patch_level = coords.attrs['patch_level']
         patch_size = coords.attrs['patch_size']
         _, ydim, _, xdim = wsi.level_dimensions[patch_level]
@@ -244,6 +244,7 @@ if __name__ == '__main__':
         all_hipe_segs = []
         all_coords = []
 
+        print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
             if i == args.max_patches:
                 break
@@ -282,12 +283,13 @@ if __name__ == '__main__':
 
             all_coords.append((x, x1, y, y1))
 
+        print('Stitching...')
         full_img = torch.ones((3, max_x, max_y))
         full_hipe_maps = [torch.zeros((max_x, max_y))] * num_classes
         full_hipe_seg = torch.zeros((max_x, max_y)) + num_classes
 
         for i in range(len(all_imgs)):
-            print(i, end='.')
+            print('{}/{}'.format(i+1, len(all_imgs)))
             img = all_imgs[i]
             hipe_maps = all_hipe_maps[i]
             hipe_seg = all_hipe_segs[i]
