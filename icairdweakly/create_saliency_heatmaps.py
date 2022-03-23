@@ -242,6 +242,7 @@ if __name__ == '__main__':
         all_coords = []
 
         max_patches = len(coords) if args.max_patches == -1 else args.max_patches
+        wandb.log({'Patch Level':patch_level, 'Patch Size':patch_size, 'Num Patches': max_patches})
 
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
