@@ -203,6 +203,8 @@ if __name__ == '__main__':
     parser.add_argument('--hipe_perturbation_type', default='mean')
     parser.add_argument('--hipe_interp_mode', default='nearest')
     parser.add_argument('--downsample', type=int, default=8)
+    parser.add_argument('--save_high_res_patches', type=bool, default=False, action='store_true')
+    parser.add_argument('--save_to_file', type=bool, default=False, action='store_true')
 
     args = parser.parse_args()
 
@@ -264,15 +266,16 @@ if __name__ == '__main__':
             all_imgs.append(img)
             all_hipe_maps.append(hipe_maps)
             all_hipe_segs.append(hipe_seg)
-            wandb.log({
-                'Prediction': label_list[torch.argmax(Y_prob)],
-                'HiPe'             : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)],
-                'HiPe Segmentation': wandb.Image(img, caption=str(logits), masks={
-                    "predictions": {
-                        "mask_data": hipe_seg.numpy(), "class_labels": class_labels
-                    }
-                })
-                })
+            if args.save_high_res_patches:
+                wandb.log({
+                    'Prediction': label_list[torch.argmax(Y_prob)],
+                    'HiPe'             : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)],
+                    'HiPe Segmentation': wandb.Image(img, caption=str(logits), masks={
+                        "predictions": {
+                            "mask_data": hipe_seg.numpy(), "class_labels": class_labels
+                        }
+                    })
+                    })
 
             y, x = coord // args.downsample
             if x< min_x: min_x = x
@@ -324,5 +327,8 @@ if __name__ == '__main__':
                     }
                 })
             })
+
+        if args.save_to_file:
+            pass
 
     run.finish()
