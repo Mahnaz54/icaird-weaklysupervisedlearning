@@ -250,7 +250,7 @@ if __name__ == '__main__':
             img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size))))
             logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
             logits = np.round(logits.detach().numpy(), 2)[0]
-            print('{}/{} Patch coords: {} Logits: {}'.format(i, args.max_patches, coord, logits))
+            print('{}/{} Patch coords: {} Logits: {}'.format(i+1, args.max_patches, coord, logits))
             hipe_maps = []
             for c in range(num_classes):
                 hipe_maps.append(
@@ -287,6 +287,7 @@ if __name__ == '__main__':
         full_hipe_seg = torch.zeros((max_x, max_y)) + num_classes
 
         for i in range(len(all_imgs)):
+            print(i, end='.')
             img = all_imgs[i]
             hipe_maps = all_hipe_maps[i]
             hipe_seg = all_hipe_segs[i]
@@ -304,13 +305,13 @@ if __name__ == '__main__':
 
         wandb.log({
             'Region coords': [min_x*args.downsample, max_x*args.downsample, min_y*args.downsample, max_y*args.downsample],
-            'Full HiPe'             : [wandb.Image(full_hipe_maps[h][min_x:max_x, min_y:max_y], caption=label_list[h]) for
+            'Full HiPe'             : [wandb.Image(full_hipe_maps[h], caption=label_list[h]) for
                                        h in
                                        range(
                     num_classes)],
-            'Full HiPe Segmentation': wandb.Image(full_img[:,min_x:max_x, min_y:max_y], masks={
+            'Full HiPe Segmentation': wandb.Image(full_img, masks={
                 "predictions": {
-                    "mask_data": full_hipe_seg[min_x:max_x, min_y:max_y].int().numpy(), "class_labels": class_labels
+                    "mask_data": full_hipe_seg.int().numpy(), "class_labels": class_labels
                     }
                 })
             })
