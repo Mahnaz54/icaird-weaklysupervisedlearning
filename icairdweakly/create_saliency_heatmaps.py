@@ -238,7 +238,7 @@ if __name__ == '__main__':
         xdim, ydim = xdim // args.downsample, ydim // args.downsample
         pdim = patch_size // args.downsample
         full_img = torch.ones((3, xdim, ydim))
-        full_hipe_maps = [torch.zeros((xdim, ydim)) * num_classes]
+        full_hipe_maps = [torch.zeros((xdim, ydim))] * num_classes
         full_hipe_seg = torch.zeros((xdim, ydim)) - 1
 
         for i, coord in enumerate(coords):
@@ -271,12 +271,15 @@ if __name__ == '__main__':
             x, y = coord // args.downsample
             x1, y1 = x+pdim, y+pdim
             print(x, x1, y, y1)
+
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
+
             for n in range(num_classes):
-                print(F.interpolate(hipe_maps[n],(pdim, pdim)).shape)
+                print(F.interpolate(hipe_maps[n],(pdim, pdim))[0][0].shape)
                 full_hipe_maps[n][x: x1, y:y1] = F.interpolate(hipe_maps[n],(pdim, pdim))[0][0]
-                full_hipe_seg[x:x1, y:y1] = F.interpolate(hipe_seg.float().unsqueeze(0).unsqueeze(0), (pdim,
-                                                                                                       pdim))[0][0]
+
+            full_hipe_seg[x:x1, y:y1] = F.interpolate(hipe_seg.float().unsqueeze(0).unsqueeze(0), (pdim,
+                                                                                                   pdim))[0][0]
 
         wandb.log({
             'Full HiPe'             : [wandb.Image(full_hipe_maps[h], caption=label_list[h]) for h in range(
