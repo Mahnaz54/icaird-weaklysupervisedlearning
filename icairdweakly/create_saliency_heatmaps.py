@@ -69,6 +69,9 @@ class ModelUmbrella(nn.Module):
 model_args = argparse.Namespace(**{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
 label_list = ['malignant', 'insufficient', 'other_benign']
 num_classes = len(label_list)
+class_labels = dict(zip(range(0, num_classes), label_list))
+print(class_labels)
+
 inf_model = initiate_model(model_args, args.ckpt_path)
 inf_model.eval()
 feature_extractor = resnet50_baseline(pretrained=True)
@@ -106,7 +109,7 @@ with h5py.File(args.patch_path, 'r') as f:
         wandb.log({
             'Patch'.format(i)  : wandb.Image(img, caption=str(logits)),
             'HiPe'             : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)],
-            'HiPe Segmentation': wandb.Image(img, masks = {"predictions": {"mask_data": hipe_seg.numpy()}})
+            'HiPe Segmentation': wandb.Image(img, masks = {"predictions": {"mask_data": hipe_seg.numpy(), "class_labels": class_labels}})
             })
 
 
