@@ -101,12 +101,16 @@ with h5py.File(args.patch_path, 'r') as f:
                                           interp_mode=args.hipe_interp_mode,
                                           verbose=True,
                                           max_depth=args.hipe_max_depth)[0])
-        wandb.log({
-                      'Patch'.format(i): wandb.Image(img, caption=str(logits)),
-                      'HiPe'           : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)]
-                  })
+
         hipe_maps = torch.Tensor(hipe_maps)
         print(hipe_maps.shape)
+        hipe_seg = torch.argmax(hipe_maps, dim = 1)
+        print(hipe_seg.shape)
+        wandb.log({
+            'Patch'.format(i): wandb.Image(img, caption=str(logits)),
+            'HiPe'           : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)]
+            'HiPe Segmentation': wandb.Image(hipe_seg)
+            })
 
 # for each patch, get saliency map
 
