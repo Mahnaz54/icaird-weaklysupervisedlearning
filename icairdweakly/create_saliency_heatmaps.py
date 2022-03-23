@@ -283,11 +283,13 @@ if __name__ == '__main__':
 
             all_coords.append((x, x1, y, y1))
 
-        print('Full image size: {}x{}'.format(max_x, max_y))
+        im_x, im_y = max_x-min_x, max_y-min_y
 
-        full_img = torch.ones((3, max_x, max_y))
-        full_hipe_maps = [torch.zeros((max_x, max_y))] * num_classes
-        full_hipe_seg = torch.zeros((max_x, max_y)) + num_classes
+        print('Full image size: {}x{}'.format(im_x, im_y))
+
+        full_img = torch.ones((3, im_x, im_y))
+        full_hipe_maps = [torch.zeros((im_x, im_y))] * num_classes
+        full_hipe_seg = torch.zeros((im_x, im_y)) + num_classes
 
         print('Stitching...')
         print(all_coords)
