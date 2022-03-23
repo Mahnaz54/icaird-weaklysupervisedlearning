@@ -266,13 +266,10 @@ if __name__ == '__main__':
                 })
 
             coord = coord // args.downsample
-            full_img[:, coord[0]: coord[0] + patch_size, coord[1]:coord[1] + patch_size] = \
-            F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
+            full_img[:, coord[0]: coord[0] + pdim, coord[1]:coord[1] + pdim] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
             for n in range(num_classes):
-                full_hipe[n][coord[0]: coord[0] + patch_size, coord[1]:coord[1] + patch_size] = \
-                F.interpolate(hipe_maps[n].unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
-            full_hipe_seg[coord[0]: coord[0] + patch_size, coord[1]:coord[1] + patch_size] = \
-            F.interpolate(hipe_seg.unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
+                full_hipe[n][coord[0]: coord[0] + pdim, coord[1]:coord[1] + pdim] = F.interpolate(hipe_maps[n].unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
+            full_hipe_seg[coord[0]: coord[0] + pdim, coord[1]:coord[1] + pdim] = F.interpolate(hipe_seg.unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
 
         wandb.log({
             'Full HiPe'             : [wandb.Image(full_hipe[h], caption=label_list[h]) for h in range(num_classes)],
