@@ -238,7 +238,7 @@ if __name__ == '__main__':
         xdim, ydim = xdim // args.downsample, ydim // args.downsample
         pdim = patch_size // args.downsample
         full_img = torch.ones((3, xdim, ydim))
-        full_hipe = [torch.zeros((xdim, ydim)) * num_classes]
+        full_hipe_maps = [torch.zeros((xdim, ydim)) * num_classes]
         full_hipe_seg = torch.zeros((xdim, ydim)) - 1
 
         for i, coord in enumerate(coords):
@@ -265,13 +265,14 @@ if __name__ == '__main__':
                 })
                 })
 
-            print(img.shape, len(hipe_maps), hipe_maps[0].shape, hipe_seg.shape)
+            print(len(hipe_maps), hipe_maps[0].shape, len(hipe_maps), full_hipe_maps[0].shape)
 
             coord = coord // args.downsample
             full_img[:, coord[0]: coord[0] + pdim, coord[1]:coord[1] + pdim] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
             for n in range(num_classes):
-                full_hipe[n][coord[0]: coord[0] + pdim, coord[1]:coord[1] + pdim] = F.interpolate(hipe_maps[n],
-                                                                                                  (pdim, pdim))[0][0]
+                print(F.interpolate(hipe_maps[n],(pdim, pdim)).shape)
+                full_hipe_maps[n][coord[0]: coord[0] + pdim, coord[1]:coord[1] + pdim] = F.interpolate(hipe_maps[n],
+                                                                                                   (pdim, pdim))[0][0]
             full_hipe_seg[coord[0]: coord[0] + pdim, coord[1]:coord[1] + pdim] = F.interpolate(hipe_seg.unsqueeze(
                     0).unsqueeze(0), (pdim, pdim))[0][0]
 
