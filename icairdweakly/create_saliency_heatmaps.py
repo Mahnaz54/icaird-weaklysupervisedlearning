@@ -239,7 +239,7 @@ if __name__ == '__main__':
         pdim = patch_size // args.downsample
         full_img = torch.ones((3, xdim, ydim))
         full_hipe_maps = [torch.zeros((xdim, ydim))] * num_classes
-        full_hipe_seg = torch.zeros((xdim, ydim)) - 1
+        full_hipe_seg = torch.zeros((xdim, ydim)) + num_classes
 
         for i, coord in enumerate(coords):
             if i == args.max_patches:
@@ -247,7 +247,7 @@ if __name__ == '__main__':
             img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size))))
             logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
             logits = np.round(logits.detach().numpy(), 2)[0]
-            print(i, logits)
+            print('Patch coords: {} Logits: {}'.format(coord, logits))
             hipe_maps = []
             for c in range(num_classes):
                 hipe_maps.append(
@@ -257,6 +257,7 @@ if __name__ == '__main__':
 
             hipe_seg = torch.argmax(torch.cat(hipe_maps, dim=1), dim=1).int()[0]
             wandb.log({
+                'Prediction': label_list[torch.argmax(Y_prob)],
                 'HiPe'             : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)],
                 'HiPe Segmentation': wandb.Image(img, caption=str(logits), masks={
                     "predictions": {
@@ -285,9 +286,5 @@ if __name__ == '__main__':
                     }
                 })
             })
-
-    # for each patch, get saliency map
-
-    # stitch patches and saliency map
 
     run.finish()
