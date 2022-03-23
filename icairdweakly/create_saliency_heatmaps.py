@@ -246,14 +246,16 @@ if __name__ == '__main__':
         all_hipe_segs = []
         all_coords = []
 
+        max_patches = len(coords) if args.max_patches == -1 else args.max_patches
+
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
-            if i == args.max_patches:
+            if i == max_patches:
                 break
             img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size))))
             logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
             logits = np.round(logits.detach().numpy(), 2)[0]
-            print('{}/{} Patch coords: {} Logits: {}'.format(i+1, args.max_patches, coord, logits))
+            print('{}/{} Patch coords: {} Logits: {}'.format(i+1, max_patches, coord, logits))
             hipe_maps = []
             for c in range(num_classes):
                 hipe_maps.append(
