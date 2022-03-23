@@ -105,6 +105,8 @@ with h5py.File(args.patch_path, 'r') as f:
                       'Patch'.format(i): wandb.Image(img, caption=str(logits)),
                       'HiPe'           : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)]
                   })
+        hipe_maps = torch.Tensor(hipe_maps)
+        print(hipe_maps.shape)
 
 # for each patch, get saliency map
 
