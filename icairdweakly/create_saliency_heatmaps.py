@@ -265,6 +265,8 @@ if __name__ == '__main__':
                 })
                 })
 
+            print(img.shape, len(hipe_maps), hipe_maps[0].shape, hipe_seg.shape)
+
             coord = coord // args.downsample
             full_img[:, coord[0]: coord[0] + pdim, coord[1]:coord[1] + pdim] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
             for n in range(num_classes):
