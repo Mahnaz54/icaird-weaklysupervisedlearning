@@ -313,7 +313,8 @@ if __name__ == '__main__':
             })
 
         if len(args.save_path) > 0:
-            Image.fromarray(full_hipe_seg.numpy()).save(args.save_path + slide_name + '.png')
+            Image.fromarray(full_hipe_seg.numpy()).save(args.save_path + '_saliency_segmentation_' + slide_name +
+                                                        '.png')
         print('Done!')
 
     run.finish()
