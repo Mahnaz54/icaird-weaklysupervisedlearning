@@ -265,17 +265,12 @@ if __name__ == '__main__':
                 })
                 })
 
-            print(len(hipe_maps), hipe_maps[0].shape, len(full_hipe_maps), full_hipe_maps[0].shape)
-
-            print(coord)
             x, y = coord // args.downsample
             x1, y1 = x+pdim, y+pdim
-            print(x, x1, y, y1)
 
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
 
             for n in range(num_classes):
-                print(F.interpolate(hipe_maps[n],(pdim, pdim))[0][0].shape)
                 full_hipe_maps[n][x: x1, y:y1] = F.interpolate(hipe_maps[n],(pdim, pdim))[0][0]
 
             full_hipe_seg[x:x1, y:y1] = F.interpolate(hipe_seg.float().unsqueeze(0).unsqueeze(0), (pdim,
