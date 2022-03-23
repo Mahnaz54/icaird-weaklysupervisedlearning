@@ -231,7 +231,7 @@ if __name__ == '__main__':
     transforms = default_transforms()
     # load patch data
     with h5py.File(args.patch_path, 'r') as f:
-        coords = f['coords'].sorted()
+        coords = f['coords']
         patch_level = coords.attrs['patch_level']
         patch_size = coords.attrs['patch_size']
         _, ydim, _, xdim = wsi.level_dimensions[patch_level]
