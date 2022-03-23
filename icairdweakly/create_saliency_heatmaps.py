@@ -236,6 +236,8 @@ if __name__ == '__main__':
         patch_size = coords.attrs['patch_size']
         _, xdim, _, ydim = wsi.level_dimensions[patch_level]
         xdim, ydim = xdim // args.downsample, ydim // args.downsample
+        min_x, min_y, max_x, max_y = xdim, ydim, 0, 0
+
         pdim = patch_size // args.downsample
         full_img = torch.ones((3, xdim, ydim))
         full_hipe_maps = [torch.zeros((xdim, ydim))] * num_classes
@@ -267,7 +269,11 @@ if __name__ == '__main__':
                 })
 
             x, y = coord // args.downsample
+            if x< min_x: min_x = x
+            if y < min_y: min_y = y
             x1, y1 = x+pdim, y+pdim
+            if x1 > max_x: max_x = x1
+            if y1 > max_y: max_y = y1
 
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
 
@@ -277,12 +283,15 @@ if __name__ == '__main__':
             full_hipe_seg[x:x1, y:y1] = F.interpolate(hipe_seg.float().unsqueeze(0).unsqueeze(0), (pdim,
                                                                                                    pdim))[0][0]
 
+
         wandb.log({
-            'Full HiPe'             : [wandb.Image(full_hipe_maps[h], caption=label_list[h]) for h in range(
+            'Full HiPe'             : [wandb.Image(full_hipe_maps[h][min_x:max_x, min_y:max_y], caption=label_list[h]) for
+                                       h in
+                                       range(
                     num_classes)],
-            'Full HiPe Segmentation': wandb.Image(full_img, masks={
+            'Full HiPe Segmentation': wandb.Image(full_img[:,min_x:max_x, min_y:max_y], masks={
                 "predictions": {
-                    "mask_data": full_hipe_seg.int().numpy(), "class_labels": class_labels
+                    "mask_data": full_hipe_seg[min_x:max_x, min_y:max_y].int().numpy(), "class_labels": class_labels
                     }
                 })
             })
