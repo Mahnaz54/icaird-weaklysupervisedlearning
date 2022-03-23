@@ -48,10 +48,6 @@ def blur(x, klen=11, ksig=5):
     return F.conv2d(x, kern, padding=klen // 2)
 
 
-def normalise(x):
-    return (x - x.min()) / max(x.max() - x.min(), 0.0001)
-
-
 def hierarchical_perturbation(model, input, target, interp_mode='nearest', resize=None, batch_size=1,
                               perturbation_type='mean', threshold_mode='mid-range', return_info=False,
                               diff_func=torch.relu, max_depth=-1, verbose=True):
@@ -191,11 +187,11 @@ class ModelUmbrella(nn.Module):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Saliency segmentation script')
-    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00033-01.isyntax',
+    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00025-01.isyntax',
                         help='path to isyntax slide')
     parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0_checkpoint.pt',
                         help='path to model checkpoint')
-    parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
+    parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00025-01.h5',
                         help='path to model checkpoint')
     parser.add_argument('--max_patches', type=int, default=-1)
     parser.add_argument('--hipe_max_depth', type=int, default=2)
