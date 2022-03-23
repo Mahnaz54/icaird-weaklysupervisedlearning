@@ -102,6 +102,7 @@ with h5py.File(args.patch_path, 'r') as f:
                                               max_depth=args.hipe_max_depth)[0])
 
         hipe_seg = torch.argmax(torch.cat(hipe_maps, dim=1), dim=1)/num_classes
+        print(np.unique(hipe_seg.numpy()))
         wandb.log({
             'Patch'.format(i)  : wandb.Image(img, caption=str(logits)),
             'HiPe'             : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)],
