@@ -239,9 +239,10 @@ if __name__ == '__main__':
         min_x, min_y, max_x, max_y = xdim, ydim, 0, 0
 
         pdim = patch_size // args.downsample
-        full_img = torch.ones((3, xdim, ydim))
-        full_hipe_maps = [torch.zeros((xdim, ydim))] * num_classes
-        full_hipe_seg = torch.zeros((xdim, ydim)) + num_classes
+        all_imgs = []
+        all_hipe_maps = []
+        all_hipe_segs = []
+        all_coords = []
 
         for i, coord in enumerate(coords):
             if i == args.max_patches:
@@ -258,6 +259,10 @@ if __name__ == '__main__':
                                                   max_depth=args.hipe_max_depth)[0])
 
             hipe_seg = torch.argmax(torch.cat(hipe_maps, dim=1), dim=1).int()[0]
+
+            all_imgs.append(img)
+            all_hipe_maps.append(hipe_maps)
+            all_hipe_segs.append(hipe_seg)
             wandb.log({
                 'Prediction': label_list[torch.argmax(Y_prob)],
                 'HiPe'             : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)],
@@ -275,6 +280,19 @@ if __name__ == '__main__':
             if x1 > max_x: max_x = x1
             if y1 > max_y: max_y = y1
 
+            all_coords.append((x, x1, y, y1))
+
+        full_img = torch.ones((3, max_x, max_y))
+        full_hipe_maps = [torch.zeros((max_x, max_y))] * num_classes
+        full_hipe_seg = torch.zeros((max_x, max_y)) + num_classes
+
+        for i in range(len(all_imgs)):
+            img = all_imgs[i]
+            hipe_maps = all_hipe_maps[i]
+            hipe_seg = all_hipe_segs[i]
+            x, x1, y, y1 = all_coords[i]
+            x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
+
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
 
             for n in range(num_classes):
@@ -285,6 +303,7 @@ if __name__ == '__main__':
 
 
         wandb.log({
+            'Region coords': [min_x*args.downsample, max_x*args.downsample, min_y*args.downsample, max_y*args.downsample],
             'Full HiPe'             : [wandb.Image(full_hipe_maps[h][min_x:max_x, min_y:max_y], caption=label_list[h]) for
                                        h in
                                        range(
