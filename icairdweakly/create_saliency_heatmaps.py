@@ -203,8 +203,8 @@ if __name__ == '__main__':
     parser.add_argument('--hipe_perturbation_type', default='mean')
     parser.add_argument('--hipe_interp_mode', default='nearest')
     parser.add_argument('--downsample', type=int, default=8)
-    parser.add_argument('--save_high_res_patches', type=bool, default=False, action='store_true')
-    parser.add_argument('--save_to_file', type=bool, default=False, action='store_true')
+    parser.add_argument('--save_high_res_patches', default=False, action='store_true')
+    parser.add_argument('--save_to_file', default=False, action='store_true')
 
     args = parser.parse_args()
 
