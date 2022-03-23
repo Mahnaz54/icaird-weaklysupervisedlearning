@@ -108,7 +108,7 @@ with h5py.File(args.patch_path, 'r') as f:
         wandb.log({
             'Patch'.format(i): wandb.Image(img, caption=str(logits)),
             'HiPe'           : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)],
-            'HiPe Segmentation': wandb.Image(hipe_seg)
+            'HiPe Segmentation': wandb.Image(hipe_seg.long())
             })
 
 # for each patch, get saliency map
