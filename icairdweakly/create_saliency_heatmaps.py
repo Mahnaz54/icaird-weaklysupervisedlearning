@@ -86,14 +86,17 @@ with h5py.File(args.patch_path, 'r') as f:
     print(coords)
     patch_level = coords.attrs['patch_level']
     patch_size = coords.attrs['patch_size']
-    x0, x1, y0, y1 = wsi.level_dimensions[patch_level]
+    _, xdim, _, ydim = wsi.level_dimensions[patch_level]
+
+    full_img = torch.ones((3,xdim,ydim))
+    full_hipe = torch.ones((xdim,ydim))
+    full_seg = torch.ones((xdim,ydim))
 
     for i, coord in enumerate(coords):
         if i == args.max_patches:
-            run.finish()
-            exit()
+            break
         img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size))))
-        print(img.shape)
+        print(coord)
         exit()
         logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
         logits = np.round(logits.detach().numpy(), 2)[0]
@@ -111,6 +114,8 @@ with h5py.File(args.patch_path, 'r') as f:
             'HiPe Segmentation': wandb.Image(img, caption=str(logits), masks = {"predictions": {"mask_data": hipe_seg.numpy(),
                                                                             "class_labels": class_labels}})
             })
+
+
 
 
 # for each patch, get saliency map
