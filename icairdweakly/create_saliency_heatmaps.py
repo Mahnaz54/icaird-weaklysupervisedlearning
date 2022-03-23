@@ -86,6 +86,7 @@ transforms = default_transforms()
 # load patch data
 with h5py.File(args.patch_path, 'r') as f:
     coords = f['coords']
+    print(coords)
     patch_level = coords.attrs['patch_level']
     patch_size = coords.attrs['patch_size']
     for i, coord in enumerate(coords):
