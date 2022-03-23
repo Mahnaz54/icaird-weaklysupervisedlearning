@@ -250,12 +250,12 @@ if __name__ == '__main__':
             img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size))))
             logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
             logits = np.round(logits.detach().numpy(), 2)[0]
-            print('Patch coords: {} Logits: {}'.format(coord, logits))
+            print('{}/{} Patch coords: {} Logits: {}'.format(i, args.max_patches, coord, logits))
             hipe_maps = []
             for c in range(num_classes):
                 hipe_maps.append(
                         hierarchical_perturbation(model, img.unsqueeze(0), c, perturbation_type=args.hipe_perturbation_type,
-                                                  interp_mode=args.hipe_interp_mode, verbose=True,
+                                                  interp_mode=args.hipe_interp_mode, verbose=False,
                                                   max_depth=args.hipe_max_depth)[0])
 
             hipe_seg = torch.argmax(torch.cat(hipe_maps, dim=1), dim=1).int()[0]
