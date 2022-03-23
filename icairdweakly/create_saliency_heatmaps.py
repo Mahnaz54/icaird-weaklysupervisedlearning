@@ -29,119 +29,7 @@ from datasets.wsi_dataset import Wsi_Region
 from create_patches import seg_and_patch
 from datasets.wsi_dataset import default_transforms
 import torch.nn.functional as F
-
 import wandb
-
-parser = argparse.ArgumentParser(description='Saliency segmentation script')
-parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00033-01.isyntax',
-                    help='path to isyntax slide')
-parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0_checkpoint.pt',
-                    help='path to model checkpoint')
-parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
-                    help='path to model checkpoint')
-parser.add_argument('--level', type=int, default=6)
-parser.add_argument('--max_patches', type=int, default=-1)
-parser.add_argument('--hipe_max_depth', type=int, default=2)
-parser.add_argument('--hipe_perturbation_type', default='mean')
-parser.add_argument('--hipe_interp_mode', default='nearest')
-parser.add_argument('--downsample', type=int, default=8)
-
-args = parser.parse_args()
-
-print(args)
-
-proj = "icaird_sal_seg"
-run = wandb.init(project=proj, entity="jessicamarycooper", config=args)
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-
-class ModelUmbrella(nn.Module):
-
-    def __init__(self, feature_extractor, inf_model):
-        super().__init__()
-        self.feature_extractor = feature_extractor
-        self.inf_model = inf_model
-
-    def forward(self, x):
-        return self.inf_model(self.feature_extractor(x))
-
-
-# load models
-model_args = argparse.Namespace(**{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
-label_list = ['malignant', 'insufficient', 'other_benign']
-num_classes = len(label_list)
-class_labels = dict(zip(range(0, num_classes), label_list))
-
-inf_model = initiate_model(model_args, args.ckpt_path)
-inf_model.eval()
-feature_extractor = resnet50_baseline(pretrained=True)
-feature_extractor.eval()
-model = ModelUmbrella(feature_extractor, inf_model)
-
-# load WSI
-wsi = WholeSlideImage(args.slide_path, hdf5_file=None)
-transforms = default_transforms()
-# load patch data
-with h5py.File(args.patch_path, 'r') as f:
-    coords = f['coords']
-    patch_level = coords.attrs['patch_level']
-    patch_size = coords.attrs['patch_size']
-    _, xdim, _, ydim = wsi.level_dimensions[patch_level]
-    xdim, ydim = xdim//args.downsample, ydim//args.downsample
-    pdim = patch_size//args.downsample
-    full_img = torch.ones((3,xdim,ydim))
-    full_hipe = [torch.zeros((xdim,ydim)) * num_classes]
-    full_hipe_seg = torch.zeros((xdim,ydim))-1
-
-
-    for i, coord in enumerate(coords):
-        if i == args.max_patches:
-            break
-        img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size))))
-        logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
-        logits = np.round(logits.detach().numpy(), 2)[0]
-        print(i, logits)
-        hipe_maps = []
-        for c in range(num_classes):
-            hipe_maps.append(
-                    hierarchical_perturbation(model, img.unsqueeze(0), c, perturbation_type=args.hipe_perturbation_type,
-                                              interp_mode=args.hipe_interp_mode, verbose=True,
-                                              max_depth=args.hipe_max_depth)[0])
-
-        hipe_seg = torch.argmax(torch.cat(hipe_maps, dim=1), dim=1).int()[0]
-        wandb.log({
-            'HiPe'             : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)],
-            'HiPe Segmentation': wandb.Image(img, caption=str(logits), masks = {"predictions": {"mask_data": hipe_seg.numpy(),
-                                                                            "class_labels": class_labels}})
-            })
-
-        coord = coord//args.downsample
-        full_img[:, coord[0]: coord[0] + patch_size, coord[1]:coord[1]+patch_size] = F.interpolate(img.unsqueeze(0),
-                (pdim,pdim))[0]
-        for n in range(num_classes):
-            full_hipe[n][coord[0]: coord[0] + patch_size, coord[1]:coord[1]+patch_size] = F.interpolate(hipe_maps[n].unsqueeze(0).unsqueeze(0), (pdim,pdim))[0][0]
-        full_hipe_seg[coord[0]: coord[0] + patch_size, coord[1]:coord[1]+patch_size] = F.interpolate(hipe_seg.unsqueeze(0).unsqueeze(0), (pdim,pdim))[0][0]
-
-
-    wandb.log({
-        'Full HiPe'             : [wandb.Image(full_hipe[h], caption=label_list[h]) for h in range(num_classes)],
-        'Full HiPe Segmentation': wandb.Image(full_img, masks={
-            "predictions": {
-                "mask_data": full_hipe_seg.numpy(), "class_labels": class_labels
-            }
-        })
-        })
-
-
-
-
-# for each patch, get saliency map
-
-# stitch patches and saliency map
-
-run.finish()
-
 
 
 def gkern(klen, nsig):
@@ -288,3 +176,115 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
             return saliency, {'thresholds': thresholds_d_list, 'masks': masks_d_list, 'total_masks': total_masks}
         else:
             return saliency, total_masks
+
+
+class ModelUmbrella(nn.Module):
+
+    def __init__(self, feature_extractor, inf_model):
+        super().__init__()
+        self.feature_extractor = feature_extractor
+        self.inf_model = inf_model
+
+    def forward(self, x):
+        return self.inf_model(self.feature_extractor(x))
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Saliency segmentation script')
+    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00033-01.isyntax',
+                        help='path to isyntax slide')
+    parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0_checkpoint.pt',
+                        help='path to model checkpoint')
+    parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
+                        help='path to model checkpoint')
+    parser.add_argument('--level', type=int, default=6)
+    parser.add_argument('--max_patches', type=int, default=-1)
+    parser.add_argument('--hipe_max_depth', type=int, default=2)
+    parser.add_argument('--hipe_perturbation_type', default='mean')
+    parser.add_argument('--hipe_interp_mode', default='nearest')
+    parser.add_argument('--downsample', type=int, default=8)
+
+    args = parser.parse_args()
+
+    print(args)
+
+    proj = "icaird_sal_seg"
+    run = wandb.init(project=proj, entity="jessicamarycooper", config=args)
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
+    # load models
+    model_args = argparse.Namespace(**{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
+    label_list = ['malignant', 'insufficient', 'other_benign']
+    num_classes = len(label_list)
+    class_labels = dict(zip(range(0, num_classes), label_list))
+
+    inf_model = initiate_model(model_args, args.ckpt_path)
+    inf_model.eval()
+    feature_extractor = resnet50_baseline(pretrained=True)
+    feature_extractor.eval()
+    model = ModelUmbrella(feature_extractor, inf_model)
+
+    # load WSI
+    wsi = WholeSlideImage(args.slide_path, hdf5_file=None)
+    transforms = default_transforms()
+    # load patch data
+    with h5py.File(args.patch_path, 'r') as f:
+        coords = f['coords']
+        patch_level = coords.attrs['patch_level']
+        patch_size = coords.attrs['patch_size']
+        _, xdim, _, ydim = wsi.level_dimensions[patch_level]
+        xdim, ydim = xdim // args.downsample, ydim // args.downsample
+        pdim = patch_size // args.downsample
+        full_img = torch.ones((3, xdim, ydim))
+        full_hipe = [torch.zeros((xdim, ydim)) * num_classes]
+        full_hipe_seg = torch.zeros((xdim, ydim)) - 1
+
+        for i, coord in enumerate(coords):
+            if i == args.max_patches:
+                break
+            img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size))))
+            logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
+            logits = np.round(logits.detach().numpy(), 2)[0]
+            print(i, logits)
+            hipe_maps = []
+            for c in range(num_classes):
+                hipe_maps.append(
+                        hierarchical_perturbation(model, img.unsqueeze(0), c, perturbation_type=args.hipe_perturbation_type,
+                                                  interp_mode=args.hipe_interp_mode, verbose=True,
+                                                  max_depth=args.hipe_max_depth)[0])
+
+            hipe_seg = torch.argmax(torch.cat(hipe_maps, dim=1), dim=1).int()[0]
+            wandb.log({
+                'HiPe'             : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)],
+                'HiPe Segmentation': wandb.Image(img, caption=str(logits), masks={
+                    "predictions": {
+                        "mask_data": hipe_seg.numpy(), "class_labels": class_labels
+                    }
+                })
+                })
+
+            coord = coord // args.downsample
+            full_img[:, coord[0]: coord[0] + patch_size, coord[1]:coord[1] + patch_size] = \
+            F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
+            for n in range(num_classes):
+                full_hipe[n][coord[0]: coord[0] + patch_size, coord[1]:coord[1] + patch_size] = \
+                F.interpolate(hipe_maps[n].unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
+            full_hipe_seg[coord[0]: coord[0] + patch_size, coord[1]:coord[1] + patch_size] = \
+            F.interpolate(hipe_seg.unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
+
+        wandb.log({
+            'Full HiPe'             : [wandb.Image(full_hipe[h], caption=label_list[h]) for h in range(num_classes)],
+            'Full HiPe Segmentation': wandb.Image(full_img, masks={
+                "predictions": {
+                    "mask_data": full_hipe_seg.numpy(), "class_labels": class_labels
+                    }
+                })
+            })
+
+    # for each patch, get saliency map
+
+    # stitch patches and saliency map
+
+    run.finish()
