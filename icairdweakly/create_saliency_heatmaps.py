@@ -13,6 +13,7 @@ from datasets.wsi_dataset import default_transforms
 import torch.nn.functional as F
 import wandb
 from scipy.ndimage.filters import gaussian_filter
+from PIL import Image
 
 
 
@@ -183,7 +184,7 @@ if __name__ == '__main__':
     parser.add_argument('--hipe_interp_mode', default='nearest')
     parser.add_argument('--downsample', type=int, default=8)
     parser.add_argument('--save_high_res_patches', default=False, action='store_true')
-    parser.add_argument('--save_to_file', default=False, action='store_true')
+    parser.add_argument('--save_path', default='')
 
     args = parser.parse_args()
 
@@ -215,6 +216,7 @@ if __name__ == '__main__':
         coords = f['coords']
         patch_level = coords.attrs['patch_level']
         patch_size = coords.attrs['patch_size']
+        slide_name = args.slide_path.split('/')[-1].split('.')[0]
         _, ydim, _, xdim = wsi.level_dimensions[patch_level]
         xdim, ydim = xdim // args.downsample, ydim // args.downsample
         min_x, min_y, max_x, max_y = xdim, ydim, 0, 0
@@ -227,7 +229,7 @@ if __name__ == '__main__':
 
         max_patches = len(coords) if args.max_patches == -1 else args.max_patches
         wandb.log({'Patch Level':patch_level, 'Patch Size':patch_size, 'Num Patches': max_patches,
-                   'Slide': args.slide_path.split('/')[-1].split('.')[0]})
+                   'Slide': slide_name})
 
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
@@ -310,8 +312,8 @@ if __name__ == '__main__':
                 })
             })
 
-        if args.save_to_file:
-            pass
+        if len(args.save_path) > 0:
+            Image.fromarray(full_hipe_seg.numpy()).save(args.save_path + slide_name + '.png')
         print('Done!')
 
     run.finish()
