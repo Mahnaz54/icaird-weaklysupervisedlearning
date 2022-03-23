@@ -80,14 +80,14 @@ model = ModelUmbrella(feature_extractor, inf_model)
 # load WSI
 wsi = WholeSlideImage(args.slide_path, hdf5_file=None)
 transforms = default_transforms()
-print(wsi.level_dimensions)
-exit()
 # load patch data
 with h5py.File(args.patch_path, 'r') as f:
     coords = f['coords']
     print(coords)
     patch_level = coords.attrs['patch_level']
     patch_size = coords.attrs['patch_size']
+    print(wsi.level_dimensions[patch_level])
+    exit()
     for i, coord in enumerate(coords):
         if i == args.max_patches:
             run.finish()
