@@ -197,7 +197,6 @@ if __name__ == '__main__':
                         help='path to model checkpoint')
     parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
                         help='path to model checkpoint')
-    parser.add_argument('--level', type=int, default=6)
     parser.add_argument('--max_patches', type=int, default=-1)
     parser.add_argument('--hipe_max_depth', type=int, default=2)
     parser.add_argument('--hipe_perturbation_type', default='mean')
