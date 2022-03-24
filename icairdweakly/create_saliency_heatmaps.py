@@ -16,7 +16,6 @@ from scipy.ndimage.filters import gaussian_filter
 from PIL import Image
 
 
-
 def gkern(klen, nsig):
     inp = np.zeros((klen, klen))
     inp[klen // 2, klen // 2] = 1
@@ -159,6 +158,26 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
             return saliency, total_masks
 
 
+def basic_perturbation(model, input, target, k_size=1, step_size=-1):
+    bn, channels, input_y_dim, input_x_dim = input.shape
+    output = model(input)[0][:, target]
+    if step_size == -1:
+        step_size = k_size
+    x_steps = range(0, input_x_dim - k_size + 1, step_size)
+    y_steps = range(0, input_y_dim - k_size + 1, step_size)
+    heatmap = torch.zeros_like(input)
+    num_occs = 0
+    for x in x_steps:
+        for y in y_steps:
+            occ_im = input.copy()
+            occ_im[:, :, y: y + k_size, x: x + k_size] = torch.mean(input[:, :, y: y + k_size, x: x + k_size])
+            diff = max(output - model(occ_im)[0][:, target], 0)
+            heatmap[:,:, y:y+k_size, x:x+k_size] += diff
+            num_occs += 1
+
+    return heatmap, num_occs
+
+
 class ModelUmbrella(nn.Module):
 
     def __init__(self, feature_extractor, inf_model):
@@ -168,6 +187,7 @@ class ModelUmbrella(nn.Module):
 
     def forward(self, x):
         return self.inf_model(self.feature_extractor(x))
+
 
 def sort_coords(coords):
     coords = list(coords)
@@ -189,6 +209,8 @@ if __name__ == '__main__':
     parser.add_argument('--hipe_interp_mode', default='nearest')
     parser.add_argument('--downsample', type=int, default=8)
     parser.add_argument('--save_high_res_patches', default=False, action='store_true')
+    parser.add_argument('--use_basic_perturbation', default=False, action='store_true')
+    parser.add_argument('--basic_kernel_size', type=int, default=32)
     parser.add_argument('--save_path', default='')
 
     args = parser.parse_args()
@@ -200,9 +222,9 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
     # load models
-    model_args = argparse.Namespace(**{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
+    model_args = argparse.Namespace(
+        **{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
     label_list = ['malignant', 'insufficient', 'other_benign']
     num_classes = len(label_list)
     class_labels = dict(zip(range(0, num_classes), label_list))
@@ -228,13 +250,15 @@ if __name__ == '__main__':
 
         pdim = patch_size // args.downsample
         all_imgs = []
-        all_hipe_maps = []
-        all_hipe_segs = []
+        all_sal_maps = []
+        all_sal_segs = []
         all_coords = []
 
         max_patches = len(coords) if args.max_patches == -1 else args.max_patches
-        wandb.log({'Patch Level':patch_level, 'Patch Size':patch_size, 'Num Patches': max_patches,
-                   'Slide': slide_name})
+        wandb.log({
+                      'Patch Level': patch_level, 'Patch Size': patch_size, 'Num Patches': max_patches,
+                      'Slide'      : slide_name
+                  })
 
         coords = sort_coords(coords)
         print('Generating patch-level saliency...')
@@ -244,83 +268,82 @@ if __name__ == '__main__':
             img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size))))
             logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
             logits = np.round(logits.detach().numpy(), 2)[0]
-            print('{}/{} Patch coords: {} Logits: {}'.format(i+1, max_patches, coord, logits))
-            hipe_maps = []
+            print('{}/{} Patch coords: {} Logits: {}'.format(i + 1, max_patches, coord, logits))
+            sal_maps = []
             for c in range(num_classes):
-                hipe_maps.append(
-                        hierarchical_perturbation(model, img.unsqueeze(0), c, perturbation_type=args.hipe_perturbation_type,
-                                                  interp_mode=args.hipe_interp_mode, verbose=False,
-                                                  max_depth=args.hipe_max_depth)[0])
+                if args.use_basic_perturbation:
+                    sal_maps.append(
+                            basic_perturbation(model, img.unsqueeze(0), c, k_size=args.basic_kernel_size)[0])
+                else:
+                    sal_maps.append(hierarchical_perturbation(model, img.unsqueeze(0), c,
+                                                              perturbation_type=args.sal_perturbation_type,
+                                                              interp_mode=args.sal_interp_mode, verbose=False,
+                                                              max_depth=args.sal_max_depth)[0])
 
-            hipe_seg = torch.argmax(torch.cat(hipe_maps, dim=1), dim=1).int()[0]
-
+            sal_seg = torch.argmax(torch.cat(sal_maps, dim=1), dim=1).int()[0]
             all_imgs.append(img)
-            all_hipe_maps.append(hipe_maps)
-            all_hipe_segs.append(hipe_seg)
+            all_sal_maps.append(sal_maps)
+            all_sal_segs.append(sal_seg)
             if args.save_high_res_patches:
                 wandb.log({
-                    'Prediction': label_list[torch.argmax(Y_prob)],
-                    'HiPe'             : [wandb.Image(hipe_maps[h], caption=label_list[h]) for h in range(num_classes)],
-                    'HiPe Segmentation': wandb.Image(img, caption=str(logits), masks={
+                    'Prediction'       : label_list[torch.argmax(Y_prob)],
+                    'Saliency'             : [wandb.Image(sal_maps[h], caption=label_list[h]) for h in range(
+                            num_classes)],
+                    'Saliency Segmentation': wandb.Image(img, caption=str(logits), masks={
                         "predictions": {
-                            "mask_data": hipe_seg.numpy(), "class_labels": class_labels
-                        }
-                    })
+                            "mask_data": sal_seg.numpy(), "class_labels": class_labels
+                            }
+                        })
                     })
 
             y, x = coord // args.downsample
-            if x< min_x: min_x = x
+            if x < min_x: min_x = x
             if y < min_y: min_y = y
-            x1, y1 = x+pdim, y+pdim
+            x1, y1 = x + pdim, y + pdim
             if x1 > max_x: max_x = x1
             if y1 > max_y: max_y = y1
 
             all_coords.append((x, x1, y, y1))
 
-        im_x, im_y = max_x-min_x, max_y-min_y
+        im_x, im_y = max_x - min_x, max_y - min_y
 
         print('Full image size: {}x{}'.format(im_x, im_y))
 
         full_img = torch.ones((3, im_x, im_y))
-        full_hipe_maps = [torch.zeros((im_x, im_y))] * num_classes
-        full_hipe_seg = torch.zeros((im_x, im_y)) + num_classes
+        full_sal_maps = [torch.zeros((im_x, im_y))] * num_classes
+        full_sal_seg = torch.zeros((im_x, im_y)) + num_classes
 
         print('Stitching...')
         print(all_coords)
 
         for i in range(len(all_imgs)):
-            print('{}/{}'.format(i+1, len(all_imgs)))
+            print('{}/{}'.format(i + 1, len(all_imgs)))
             img = all_imgs[i]
-            hipe_maps = all_hipe_maps[i]
-            hipe_seg = all_hipe_segs[i]
+            sal_maps = all_sal_maps[i]
+            sal_seg = all_sal_segs[i]
             x, x1, y, y1 = all_coords[i]
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
 
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
 
             for n in range(num_classes):
-                full_hipe_maps[n][x: x1, y:y1] = F.interpolate(hipe_maps[n],(pdim, pdim))[0][0]
+                full_sal_maps[n][x: x1, y:y1] = F.interpolate(sal_maps[n], (pdim, pdim))[0][0]
 
-            full_hipe_seg[x:x1, y:y1] = F.interpolate(hipe_seg.float().unsqueeze(0).unsqueeze(0), (pdim,
-                                                                                                   pdim))[0][0]
-
+            full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
 
         wandb.log({
-            'Region coords': [min_x*args.downsample, max_x*args.downsample, min_y*args.downsample, max_y*args.downsample],
-            'Full HiPe'             : [wandb.Image(full_hipe_maps[h], caption=label_list[h]) for
-                                       h in
-                                       range(
-                    num_classes)],
-            'Full HiPe Segmentation': wandb.Image(full_img, masks={
+            'Region coords': [min_x * args.downsample, max_x * args.downsample, min_y * args.downsample,
+                              max_y * args.downsample],
+            'Full Saliency': [wandb.Image(full_sal_maps[h], caption=label_list[h]) for h in range(num_classes)],
+            'Full Saliency Segmentation': wandb.Image(full_img, masks={
                 "predictions": {
-                    "mask_data": full_hipe_seg.int().numpy(), "class_labels": class_labels
+                    "mask_data": full_sal_seg.int().numpy(), "class_labels": class_labels
                     }
                 })
             })
 
         if len(args.save_path) > 0:
-            Image.fromarray(full_hipe_seg.numpy()).save(args.save_path + '_saliency_segmentation_' + slide_name +
-                                                        '.png')
+            Image.fromarray(full_sal_seg.numpy()).save(args.save_path + '_saliency_segmentation_' + slide_name + '.png')
         print('Done!')
 
     run.finish()
