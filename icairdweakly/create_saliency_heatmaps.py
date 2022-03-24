@@ -39,6 +39,8 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
     with torch.no_grad():
         dev = input.device
         print('Using device: {}'.format(dev))
+        if dev == 'cpu':
+            batch_size = 1
         bn, channels, input_y_dim, input_x_dim = input.shape
         dim = min(input_x_dim, input_y_dim)
         total_masks = 0
@@ -202,8 +204,6 @@ if __name__ == '__main__':
     parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
                         help='path to h5 patch file')
     parser.add_argument('--max_patches', type=int, default=-1, help='Number of patches to extract and segment')
-    parser.add_argument('--hipe_batch_size', type=int, default=1, help='Batch size for HiPe. Higher is faster, '
-                                                                       'if your working memory can handle it.')
     parser.add_argument('--hipe_max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
                                                                       'more detailed but takes much longer.')
     parser.add_argument('--hipe_perturbation_type', default='mean', help='Perturbation substrate for use in '
@@ -294,8 +294,7 @@ if __name__ == '__main__':
                     sal_maps.append(hierarchical_perturbation(model, img.unsqueeze(0), c,
                                                               perturbation_type=args.hipe_perturbation_type,
                                                               interp_mode=args.hipe_interp_mode, verbose=True,
-                                                              max_depth=args.hipe_max_depth,
-                                                              batch_size=args.hipe_batch_size)[0])
+                                                              max_depth=args.hipe_max_depth)[0])
 
             sal_seg = torch.argmax(torch.cat(sal_maps, dim=1), dim=1).int()[0]
             all_imgs.append(img)
@@ -337,6 +336,8 @@ if __name__ == '__main__':
             print('{}/{}'.format(i + 1, len(all_imgs)))
             img = all_imgs[i]
             sal_maps = all_sal_maps[i]
+            print(len(sal_maps))
+            print(sal_maps[0].shape)
             sal_seg = all_sal_segs[i]
             x, x1, y, y1 = all_coords[i]
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
