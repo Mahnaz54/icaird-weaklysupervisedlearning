@@ -39,8 +39,6 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
     with torch.no_grad():
         dev = input.device
         print('Using device: {}'.format(dev))
-        if dev == 'cpu':
-            batch_size = 1
         bn, channels, input_y_dim, input_x_dim = input.shape
         dim = min(input_x_dim, input_y_dim)
         total_masks = 0
