@@ -170,8 +170,9 @@ class ModelUmbrella(nn.Module):
         return self.inf_model(self.feature_extractor(x))
 
 def sort_coords(coords):
+    print(len(coords))
     coords = list(coords)
-    print(coords.shape)
+    print(len(coords))
     print(coords[0])
     coords.sort(key=lambda p: p[0] + p[1])
 
