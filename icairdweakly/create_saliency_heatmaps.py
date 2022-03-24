@@ -45,7 +45,7 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
         dim = min(input_x_dim, input_y_dim)
         total_masks = 0
         depth = 0
-        num_cells = int(max(np.ceil(np.log2(dim)), 1) / 4)
+        num_cells = int(max(np.ceil(np.log2(dim)), 1) / 2)
         base_max_depth = int(np.log2(dim / num_cells)) - 2
         if max_depth == -1 or max_depth > base_max_depth + 2:
             max_depth = base_max_depth
@@ -347,7 +347,7 @@ if __name__ == '__main__':
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
 
             for n in range(num_classes):
-                full_sal_maps[n][x: x1, y:y1] += F.interpolate(sal_maps[n], (pdim, pdim))[0][0]
+                full_sal_maps[n][x: x1, y:y1] += F.interpolate(sal_maps[i][n], (pdim, pdim))[0][0]
 
             full_sal_seg[x:x1, y:y1] += F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
 
