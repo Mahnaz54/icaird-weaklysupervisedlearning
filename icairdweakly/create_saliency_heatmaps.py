@@ -170,12 +170,8 @@ class ModelUmbrella(nn.Module):
         return self.inf_model(self.feature_extractor(x))
 
 def sort_coords(coords):
-    print(len(coords))
     coords = list(coords)
-    print(len(coords))
-    print(coords[0])
     coords.sort(key=lambda p: p[0] + p[1])
-
     return coords
 
 
@@ -245,8 +241,6 @@ if __name__ == '__main__':
         for i, coord in enumerate(coords):
             if i == max_patches:
                 break
-            print(coord)
-            exit()
             img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size))))
             logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
             logits = np.round(logits.detach().numpy(), 2)[0]
