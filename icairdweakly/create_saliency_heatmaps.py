@@ -38,6 +38,7 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
     if verbose: print('\nBelieve the HiPe!')
     with torch.no_grad():
         dev = input.device
+        print('Using device: {}'.format(dev))
         if dev == 'cpu':
             batch_size = 1
         bn, channels, input_y_dim, input_x_dim = input.shape
@@ -247,9 +248,9 @@ if __name__ == '__main__':
     num_classes = len(label_list)
     class_labels = dict(zip(range(0, num_classes), label_list))
 
-    inf_model = initiate_model(model_args, args.ckpt_path)
+    inf_model = initiate_model(model_args, args.ckpt_path).to(device)
     inf_model.eval()
-    feature_extractor = resnet50_baseline(pretrained=True)
+    feature_extractor = resnet50_baseline(pretrained=True).to(device)
     feature_extractor.eval()
     model = ModelUmbrella(feature_extractor, inf_model)
 
@@ -283,7 +284,7 @@ if __name__ == '__main__':
         for i, coord in enumerate(coords):
             if i == max_patches:
                 break
-            img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size))))
+            img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
             logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
             logits = np.round(logits.detach().numpy(), 2)[0]
             print('{}/{} Patch coords: {} Logits: {}'.format(i + 1, max_patches, coord, logits))
@@ -295,7 +296,7 @@ if __name__ == '__main__':
                 else:
                     sal_maps.append(hierarchical_perturbation(model, img.unsqueeze(0), c,
                                                               perturbation_type=args.hipe_perturbation_type,
-                                                              interp_mode=args.hipe_interp_mode, verbose=False,
+                                                              interp_mode=args.hipe_interp_mode, verbose=True,
                                                               max_depth=args.hipe_max_depth,
                                                               batch_size=args.hipe_batch_size)[0])
 
