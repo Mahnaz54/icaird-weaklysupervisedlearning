@@ -170,7 +170,10 @@ class ModelUmbrella(nn.Module):
         return self.inf_model(self.feature_extractor(x))
 
 def sort_coords(coords):
-    coords = num
+    coords = list(coords)
+    print(coords.shape)
+    print(coords[0])
+    coords.sort(key=lambda p: p[0] + p[1])
 
     return coords
 
@@ -218,7 +221,7 @@ if __name__ == '__main__':
     transforms = default_transforms()
     # load patch data
     with h5py.File(args.patch_path, 'r') as f:
-        coords = f['coords']
+        coords = sort_coords(f['coords'])
         patch_level = coords.attrs['patch_level']
         patch_size = coords.attrs['patch_size']
         slide_name = args.slide_path.split('/')[-1].split('.')[0]
