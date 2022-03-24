@@ -202,16 +202,34 @@ if __name__ == '__main__':
     parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0_checkpoint.pt',
                         help='path to model checkpoint')
     parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
-                        help='path to model checkpoint')
-    parser.add_argument('--max_patches', type=int, default=-1)
-    parser.add_argument('--hipe_max_depth', type=int, default=1)
-    parser.add_argument('--hipe_perturbation_type', default='mean')
-    parser.add_argument('--hipe_interp_mode', default='nearest')
-    parser.add_argument('--downsample', type=int, default=8)
-    parser.add_argument('--save_high_res_patches', default=False, action='store_true')
-    parser.add_argument('--use_flat_perturbation', default=False, action='store_true')
-    parser.add_argument('--flat_kernel_size', type=int, default=32)
-    parser.add_argument('--save_path', default='')
+                        help='path to h5 patch file')
+    parser.add_argument('--max_patches', type=int, default=-1, help='Number of patches to extract and segment')
+    parser.add_argument('--hipe_batch_size', type=int, default=1, help='Batch size for HiPe. Higher is faster, '
+                                                                       'if your working memory can handle it.')
+    parser.add_argument('--hipe_max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
+                                                                      'more detailed but takes much longer.')
+    parser.add_argument('--hipe_perturbation_type', default='mean', help='Perturbation substrate for use in '
+                                                                         'hierarchical perturbation.')
+    parser.add_argument('--hipe_interp_mode', default='nearest', help='Interpolation mode for hierarchical '
+                                                                      'perturbation')
+    parser.add_argument('--downsample', type=int, default=8, help='Downsample for final image and saliency '
+                                                                  'segmentation stitching. 1 = no downsampling. If '
+                                                                  'all patches are used, low values will probably '
+                                                                  'cause OOM errors.')
+    parser.add_argument('--save_high_res_patches', default=False, action='store_true', help='Whether to save high '
+                                                                                            'resolution patches and '
+                                                                                            'saliency segmentations '
+                                                                                            'to WandB log before '
+                                                                                            'stitching.')
+    parser.add_argument('--use_flat_perturbation', default=False, action='store_true', help='Whether to use flat '
+                                                                                            'peturbation instead of '
+                                                                                            'HiPe. Sightly faster at '
+                                                                                            'high kernel sizes, '
+                                                                                            'but lacks relative '
+                                                                                            'saliency detail.')
+    parser.add_argument('--flat_kernel_size', type=int, default=32, help='Kernel size for flat perturbation.')
+    parser.add_argument('--save_path', default='', help='where to save saliency segmentation png file. If empty, '
+                                                        'no local save is used. All images are logged to WandB in any case.')
 
     args = parser.parse_args()
 
@@ -254,7 +272,7 @@ if __name__ == '__main__':
         all_sal_segs = []
         all_coords = []
 
-        max_patches = len(coords) if args.max_patches == -1 else args.max_patches
+        max_patches = len(coords) if args.max_patches == -1 or args.max_patches > len(coords) else args.max_patches
         wandb.log({
                       'Patch Level': patch_level, 'Patch Size': patch_size, 'Num Patches': max_patches,
                       'Slide'      : slide_name
@@ -278,7 +296,8 @@ if __name__ == '__main__':
                     sal_maps.append(hierarchical_perturbation(model, img.unsqueeze(0), c,
                                                               perturbation_type=args.hipe_perturbation_type,
                                                               interp_mode=args.hipe_interp_mode, verbose=False,
-                                                              max_depth=args.hipe_max_depth)[0])
+                                                              max_depth=args.hipe_max_depth,
+                                                              batch_size=args.hipe_batch_size)[0])
 
             sal_seg = torch.argmax(torch.cat(sal_maps, dim=1), dim=1).int()[0]
             all_imgs.append(img)
@@ -327,9 +346,9 @@ if __name__ == '__main__':
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
 
             for n in range(num_classes):
-                full_sal_maps[n][x: x1, y:y1] = F.interpolate(sal_maps[n], (pdim, pdim))[0][0]
+                full_sal_maps[n][x: x1, y:y1] += F.interpolate(sal_maps[n], (pdim, pdim))[0][0]
 
-            full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
+            full_sal_seg[x:x1, y:y1] += F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
 
         wandb.log({
             'Region coords': [min_x * args.downsample, max_x * args.downsample, min_y * args.downsample,
