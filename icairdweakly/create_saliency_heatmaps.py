@@ -346,9 +346,9 @@ if __name__ == '__main__':
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
 
             for n in range(num_classes):
-                full_sal_maps[n][x: x1, y:y1] += F.interpolate(sal_maps[i][n], (pdim, pdim))[0][0]
+                full_sal_maps[n][x: x1, y:y1] = F.interpolate(sal_maps[n], (pdim, pdim))[0][0]
 
-            full_sal_seg[x:x1, y:y1] += F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
+            full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
 
         wandb.log({
             'Region coords': [min_x * args.downsample, max_x * args.downsample, min_y * args.downsample,
