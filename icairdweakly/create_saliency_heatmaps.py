@@ -80,8 +80,6 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
 
             if verbose:
                 print('Depth: {}, {} x {} Cell Dim'.format(depth, y_cell_dim, x_cell_dim))
-                print('Threshold: {}'.format(threshold))
-                print('Range {:.1f} to {:.1f}'.format(saliency.min(), saliency.max()))
             possible_masks = 0
 
             for x in x_ixs:
