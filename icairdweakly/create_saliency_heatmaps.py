@@ -276,9 +276,9 @@ if __name__ == '__main__':
                             flat_perturbation(model, img.unsqueeze(0), c, k_size=args.flat_kernel_size)[0])
                 else:
                     sal_maps.append(hierarchical_perturbation(model, img.unsqueeze(0), c,
-                                                              perturbation_type=args.sal_perturbation_type,
-                                                              interp_mode=args.sal_interp_mode, verbose=False,
-                                                              max_depth=args.sal_max_depth)[0])
+                                                              perturbation_type=args.hipe_perturbation_type,
+                                                              interp_mode=args.hipe_interp_mode, verbose=False,
+                                                              max_depth=args.hipe_max_depth)[0])
 
             sal_seg = torch.argmax(torch.cat(sal_maps, dim=1), dim=1).int()[0]
             all_imgs.append(img)
