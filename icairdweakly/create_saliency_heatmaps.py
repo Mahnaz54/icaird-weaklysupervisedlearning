@@ -169,6 +169,11 @@ class ModelUmbrella(nn.Module):
     def forward(self, x):
         return self.inf_model(self.feature_extractor(x))
 
+def sort_coords(coords):
+    coords = num
+
+    return coords
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Saliency segmentation script')
@@ -214,8 +219,6 @@ if __name__ == '__main__':
     # load patch data
     with h5py.File(args.patch_path, 'r') as f:
         coords = f['coords']
-        print(coords)
-        exit()
         patch_level = coords.attrs['patch_level']
         patch_size = coords.attrs['patch_size']
         slide_name = args.slide_path.split('/')[-1].split('.')[0]
@@ -237,6 +240,8 @@ if __name__ == '__main__':
         for i, coord in enumerate(coords):
             if i == max_patches:
                 break
+            print(coord)
+            exit()
             img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size))))
             logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
             logits = np.round(logits.detach().numpy(), 2)[0]
