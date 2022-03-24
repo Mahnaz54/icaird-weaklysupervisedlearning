@@ -296,9 +296,9 @@ if __name__ == '__main__':
                                                               interp_mode=args.hipe_interp_mode, verbose=True,
                                                               max_depth=args.hipe_max_depth)[0])
 
+            all_sal_maps.append(sal_maps)
             sal_seg = torch.argmax(torch.cat(sal_maps, dim=1), dim=1).int()[0]
             all_imgs.append(img)
-            all_sal_maps.append(sal_maps)
             all_sal_segs.append(sal_seg)
             if args.save_high_res_patches:
                 wandb.log({
@@ -336,8 +336,6 @@ if __name__ == '__main__':
             print('{}/{}'.format(i + 1, len(all_imgs)))
             img = all_imgs[i]
             sal_maps = all_sal_maps[i]
-            print(len(sal_maps))
-            print(sal_maps[0].shape)
             sal_seg = all_sal_segs[i]
             x, x1, y, y1 = all_coords[i]
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
