@@ -158,7 +158,7 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
             return saliency, total_masks
 
 
-def basic_perturbation(model, input, target, k_size=1, step_size=-1):
+def flat_perturbation(model, input, target, k_size=1, step_size=-1):
     bn, channels, input_y_dim, input_x_dim = input.shape
     output = model(input)[0][:, target]
     if step_size == -1:
@@ -169,7 +169,7 @@ def basic_perturbation(model, input, target, k_size=1, step_size=-1):
     num_occs = 0
     for x in x_steps:
         for y in y_steps:
-            occ_im = input.copy()
+            occ_im = input.clone()
             occ_im[:, :, y: y + k_size, x: x + k_size] = torch.mean(input[:, :, y: y + k_size, x: x + k_size])
             diff = max(output - model(occ_im)[0][:, target], 0)
             heatmap[:,:, y:y+k_size, x:x+k_size] += diff
@@ -209,8 +209,8 @@ if __name__ == '__main__':
     parser.add_argument('--hipe_interp_mode', default='nearest')
     parser.add_argument('--downsample', type=int, default=8)
     parser.add_argument('--save_high_res_patches', default=False, action='store_true')
-    parser.add_argument('--use_basic_perturbation', default=False, action='store_true')
-    parser.add_argument('--basic_kernel_size', type=int, default=32)
+    parser.add_argument('--use_flat_perturbation', default=False, action='store_true')
+    parser.add_argument('--flat_kernel_size', type=int, default=32)
     parser.add_argument('--save_path', default='')
 
     args = parser.parse_args()
@@ -271,9 +271,9 @@ if __name__ == '__main__':
             print('{}/{} Patch coords: {} Logits: {}'.format(i + 1, max_patches, coord, logits))
             sal_maps = []
             for c in range(num_classes):
-                if args.use_basic_perturbation:
+                if args.use_flat_perturbation:
                     sal_maps.append(
-                            basic_perturbation(model, img.unsqueeze(0), c, k_size=args.basic_kernel_size)[0])
+                            flat_perturbation(model, img.unsqueeze(0), c, k_size=args.flat_kernel_size)[0])
                 else:
                     sal_maps.append(hierarchical_perturbation(model, img.unsqueeze(0), c,
                                                               perturbation_type=args.sal_perturbation_type,
