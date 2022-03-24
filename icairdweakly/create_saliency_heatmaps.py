@@ -214,6 +214,8 @@ if __name__ == '__main__':
     # load patch data
     with h5py.File(args.patch_path, 'r') as f:
         coords = f['coords']
+        print(coords)
+        exit()
         patch_level = coords.attrs['patch_level']
         patch_size = coords.attrs['patch_size']
         slide_name = args.slide_path.split('/')[-1].split('.')[0]
