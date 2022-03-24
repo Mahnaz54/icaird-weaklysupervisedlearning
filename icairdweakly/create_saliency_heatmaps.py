@@ -169,9 +169,9 @@ class ModelUmbrella(nn.Module):
     def forward(self, x):
         return self.inf_model(self.feature_extractor(x))
 
-def sort_coords(coords, center_point=[0,0]):
+def sort_coords(coords):
     coords = list(coords)
-    coords.sort(key=lambda p: (p[0] - center_point[0])**2 + (p[1] - center_point[1])**2)
+    coords.sort(key=lambda p: p[0] + p[1])
     return coords
 
 
@@ -223,8 +223,6 @@ if __name__ == '__main__':
         patch_size = coords.attrs['patch_size']
         slide_name = args.slide_path.split('/')[-1].split('.')[0]
         _, ydim, _, xdim = wsi.level_dimensions[patch_level]
-        coords = sort_coords(coords, [ydim//2, xdim//2])
-
         xdim, ydim = xdim // args.downsample, ydim // args.downsample
         min_x, min_y, max_x, max_y = xdim, ydim, 0, 0
 
@@ -238,6 +236,7 @@ if __name__ == '__main__':
         wandb.log({'Patch Level':patch_level, 'Patch Size':patch_size, 'Num Patches': max_patches,
                    'Slide': slide_name})
 
+        coords = sort_coords(coords)
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
             if i == max_patches:
