@@ -222,7 +222,7 @@ if __name__ == '__main__':
     transforms = default_transforms()
     # load patch data
     with h5py.File(args.patch_path, 'r') as f:
-        coords = sort_coords(f['coords'])
+        coords = f['coords']
         patch_level = coords.attrs['patch_level']
         patch_size = coords.attrs['patch_size']
         slide_name = args.slide_path.split('/')[-1].split('.')[0]
@@ -240,6 +240,7 @@ if __name__ == '__main__':
         wandb.log({'Patch Level':patch_level, 'Patch Size':patch_size, 'Num Patches': max_patches,
                    'Slide': slide_name})
 
+        coords = sort_coords(coords)
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
             if i == max_patches:
