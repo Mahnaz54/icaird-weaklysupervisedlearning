@@ -266,7 +266,6 @@ if __name__ == '__main__':
 
         pdim = patch_size // args.downsample
         all_imgs = []
-        all_sal_maps = []
         all_sal_segs = []
         all_coords = []
 
@@ -296,7 +295,6 @@ if __name__ == '__main__':
                                                               interp_mode=args.hipe_interp_mode, verbose=True,
                                                               max_depth=args.hipe_max_depth)[0])
 
-            all_sal_maps.append(sal_maps)
             sal_seg = torch.argmax(torch.cat(sal_maps, dim=1), dim=1).int()[0]
             all_imgs.append(img)
             all_sal_segs.append(sal_seg)
@@ -326,7 +324,6 @@ if __name__ == '__main__':
         print('Full image size: {}x{}'.format(im_x, im_y))
 
         full_img = torch.ones((3, im_x, im_y))
-        full_sal_maps = [torch.zeros((im_x, im_y))] * num_classes
         full_sal_seg = torch.zeros((im_x, im_y)) + num_classes
 
         print('Stitching...')
@@ -335,24 +332,16 @@ if __name__ == '__main__':
         for i in range(len(all_imgs)):
             print('{}/{}'.format(i + 1, len(all_imgs)))
             img = all_imgs[i]
-            sal_maps = all_sal_maps[i]
             sal_seg = all_sal_segs[i]
             x, x1, y, y1 = all_coords[i]
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
 
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
-
-            for n in range(num_classes):
-                full_sal_maps[n][x: x1, y:y1] = F.interpolate(sal_maps[n], (pdim, pdim))[0][0]
-
             full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
-
-        [print(torch.sum(full_sal_maps[n])) for n in range(num_classes)]
 
         wandb.log({
             'Region coords': [min_x * args.downsample, max_x * args.downsample, min_y * args.downsample,
                               max_y * args.downsample],
-            'Full Saliency': [wandb.Image(full_sal_maps[h], caption=label_list[h]) for h in range(num_classes)],
             'Full Saliency Segmentation': wandb.Image(full_img, masks={
                 "predictions": {
                     "mask_data": full_sal_seg.int().numpy(), "class_labels": class_labels
