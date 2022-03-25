@@ -336,6 +336,10 @@ if __name__ == '__main__':
             print('{}/{}'.format(i + 1, len(all_imgs)))
             img = all_imgs[i]
             sal_maps = all_sal_maps[i]
+            print(len(sal_maps))
+            print(sal_maps[0].shape)
+            for n in range(num_classes):
+                print(torch.sum(sal_maps[n]))
             sal_seg = all_sal_segs[i]
             x, x1, y, y1 = all_coords[i]
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
@@ -343,6 +347,7 @@ if __name__ == '__main__':
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
 
             for n in range(num_classes):
+                print(n)
                 full_sal_maps[n][x: x1, y:y1] = F.interpolate(sal_maps[n], (pdim, pdim))[0][0]
 
             full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
