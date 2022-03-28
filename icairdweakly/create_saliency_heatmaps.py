@@ -210,7 +210,7 @@ if __name__ == '__main__':
                                                                          'hierarchical perturbation.')
     parser.add_argument('--hipe_interp_mode', default='nearest', help='Interpolation mode for hierarchical '
                                                                       'perturbation')
-    parser.add_argument('--downsample', type=int, default=8, help='Downsample for final image and saliency '
+    parser.add_argument('--downsample', type=int, default=4, help='Downsample for final image and saliency '
                                                                   'segmentation stitching. 1 = no downsampling. If '
                                                                   'all patches are used, low values will probably '
                                                                   'cause OOM errors.')
@@ -238,6 +238,7 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    print('Device: {}'.format(device))
     # load models
     model_args = argparse.Namespace(
         **{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
