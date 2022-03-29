@@ -336,8 +336,8 @@ if __name__ == '__main__':
 
         print(all_coords)
         all_coords = np.array(all_coords)
-        min_x, max_x, min_y, max_y = np.min(all_coords[0]), np.max(all_coords[1]), np.min(all_coords[2]), \
-                                     np.max(all_coords[3])
+        min_x, max_x, min_y, max_y = np.min(all_coords[:,0]), np.max(all_coords[:,1]), np.min(all_coords[:,2]), \
+                                     np.max(all_coords[:,3])
 
         im_x, im_y = max_x - min_x, max_y - min_y
 
