@@ -194,7 +194,7 @@ class ModelUmbrella(nn.Module):
 
 def sort_coords(coords, centre):
     centre = centre.split(',')
-    x, y = int(centre[0]), int(centre[1])
+    x, y = int(centre[1]), int(centre[0])
     print('Sorting patches around {},{}'.format(x, y))
     coords = list(coords)
     coords.sort(key=lambda p: np.sqrt((x - p[0])**2 + (y - p[1])**2))
