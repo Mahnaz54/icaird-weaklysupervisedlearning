@@ -350,6 +350,7 @@ if __name__ == '__main__':
             full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
             full_sal_map[:, x:x1, y:y1] = F.interpolate(sal_maps.unsqueeze(0), (pdim, pdim))[0]
 
+        print('Logging images...')
         wandb.log({
             'Region coords': [min_x * args.downsample, max_x * args.downsample, min_y * args.downsample,
                               max_y * args.downsample],
