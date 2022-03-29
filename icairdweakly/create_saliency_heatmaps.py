@@ -287,10 +287,10 @@ if __name__ == '__main__':
             print('{}/{} Patch coords: {} Logits: {}'.format(i + 1, max_patches, coord, logits))
 
             if args.use_flat_perturbation:
-                sal_maps = flat_perturbation(model, img.unsqueeze(0), k_size=args.flat_kernel_size)
+                sal_maps, _ = flat_perturbation(model, img.unsqueeze(0), k_size=args.flat_kernel_size)
 
             else:
-                sal_maps = hierarchical_perturbation(model, img.unsqueeze(0),
+                sal_maps, _ = hierarchical_perturbation(model, img.unsqueeze(0),
                                                               perturbation_type=args.hipe_perturbation_type,
                                                               interp_mode=args.hipe_interp_mode, verbose=True,
                                                               max_depth=args.hipe_max_depth)
