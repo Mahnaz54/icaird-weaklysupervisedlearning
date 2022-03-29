@@ -296,7 +296,7 @@ if __name__ == '__main__':
                                                               max_depth=args.hipe_max_depth)
 
             print(sal_maps.shape)
-            sal_seg = torch.argmax(sal_maps, dim=1).int()
+            sal_seg = torch.argmax(sal_maps, dim=0).int()
             print(sal_seg.shape)
             all_imgs.append(img)
             all_sal_segs.append(sal_seg)
