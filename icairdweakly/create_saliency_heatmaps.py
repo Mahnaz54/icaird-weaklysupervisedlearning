@@ -325,7 +325,7 @@ if __name__ == '__main__':
             pool = Pool(args.num_processes)
             pool.map_async(patch_saliency, coords)
             pool.close()
-            #pool.join()
+            pool.join()
         else:
             for i, coord in enumerate(coords):
                 patch_saliency(coord)
@@ -361,7 +361,7 @@ if __name__ == '__main__':
 
         if args.num_processes > 1:
             pool.close()
-            #pool.join()
+            pool.join()
 
 
         wandb.log({
