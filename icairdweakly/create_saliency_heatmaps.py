@@ -209,14 +209,14 @@ if __name__ == '__main__':
                         help='path to model checkpoint')
     parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
                         help='path to h5 patch file')
-    parser.add_argument('--max_patches', type=int, default=-1, help='Number of patches to extract and segment')
+    parser.add_argument('--max_patches', type=int, default=4, help='Number of patches to extract and segment')
     parser.add_argument('--hipe_max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
                                                                       'more detailed but takes much longer.')
     parser.add_argument('--perturbation_type', default='mean', help='Perturbation substrate for use in '
                                                                          'hierarchical perturbation.')
     parser.add_argument('--hipe_interp_mode', default='nearest', help='Interpolation mode for hierarchical '
                                                                       'perturbation')
-    parser.add_argument('--downsample', type=int, default=4, help='Downsample for final image and saliency '
+    parser.add_argument('--downsample', type=int, default=1, help='Downsample for final image and saliency '
                                                                   'segmentation stitching. 1 = no downsampling. If '
                                                                   'all patches are used, low values will probably '
                                                                   'cause OOM errors.')
@@ -229,10 +229,12 @@ if __name__ == '__main__':
                                                                                             'peturbation instead of '
                                                                                             'HiPe. Sightly faster at '
                                                                                             'high kernel sizes, '
-                                                                                            'but lacks relative '
-                                                                                            'saliency detail.')
+                                                                                            'but much slower and lacks '
+                                                                                            'relative '
+                                                                                            'saliency detail at low '
+                                                                                            'kernel sizes.')
     parser.add_argument('--flat_kernel_size', type=int, default=32, help='Kernel size for flat perturbation.')
-    parser.add_argument('--centre', default='0,0', help='Coordinate in form x,y of central patch')
+    parser.add_argument('--centre', default='37440,16704', help='Coordinate in form x,y of central patch')
     parser.add_argument('--save_path', default='', help='where to save saliency segmentation png file. If empty, '
                                                         'no local save is used. All images are logged to WandB in any case.')
 
