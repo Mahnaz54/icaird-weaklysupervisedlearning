@@ -196,9 +196,8 @@ def sort_coords(coords):
     return coords
 
 
-def patch_saliency(coord, patch_level, patch_size, model):
-    return 1,2,3
-    img = transforms(WSI.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
+def patch_saliency(coord):
+    img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
     logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
     logits = np.round(logits.detach().numpy(), 2)[0]
     print('{}/{} Patch coords: {} Logits: {}'.format(i + 1, max_patches, coord, logits))
@@ -226,15 +225,16 @@ def patch_saliency(coord, patch_level, patch_size, model):
 
     y, x = coord // args.downsample
     x1, y1 = x + pdim, y + pdim
-    coords = [x, x1, y, y1]
+    all_coords.append([x, x1, y, y1])
+    all_imgs.append(img)
+    all_sal_segs.append(sal_seg)
 
-    return img, sal_seg, coords
+    return
 
 
 def stitch(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim):
     full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
     full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
-    return full_img, full_sal_seg
 
 
 if __name__ == '__main__':
@@ -297,7 +297,7 @@ if __name__ == '__main__':
     model = ModelUmbrella(feature_extractor, inf_model)
 
     # load WSI
-    WSI = WholeSlideImage(args.slide_path)
+    wsi = WholeSlideImage(args.slide_path)
     transforms = default_transforms()
     # load patch data
     with h5py.File(args.patch_path, 'r') as f:
@@ -305,7 +305,7 @@ if __name__ == '__main__':
         patch_level = coords.attrs['patch_level']
         patch_size = coords.attrs['patch_size']
         slide_name = args.slide_path.split('/')[-1].split('.')[0]
-        _, ydim, _, xdim = WSI.level_dimensions[patch_level]
+        _, ydim, _, xdim = wsi.level_dimensions[patch_level]
         xdim, ydim = xdim // args.downsample, ydim // args.downsample
         min_x, min_y, max_x, max_y = xdim, ydim, 0, 0
 
@@ -321,16 +321,15 @@ if __name__ == '__main__':
 
         coords = sort_coords(coords)[:max_patches]
         print('Generating patch-level saliency...')
-
         if args.num_processes > 1:
             pool = Pool(args.num_processes)
-            res = [pool.apply(patch_saliency, (c, patch_level, patch_size, model)) for c in coords]
+            result = pool.map(patch_saliency, coords)
             pool.close()
             pool.join()
         else:
-            res = [patch_saliency(c, patch_level, patch_size, model) for c in coords]
+            for i, coord in enumerate(coords):
+                patch_saliency(coord)
 
-        print(res)
 
         print(all_coords)
         all_coords = np.array(all_coords)
@@ -345,6 +344,7 @@ if __name__ == '__main__':
         full_sal_seg = torch.zeros((im_x, im_y)) + num_classes
 
         print('Stitching...')
+        if args.num_processes > 1: pool = Pool(args.num_processes)
 
         for i in range(len(all_imgs)):
             print('{}/{}'.format(i + 1, len(all_imgs)))
@@ -353,7 +353,14 @@ if __name__ == '__main__':
             x, x1, y, y1 = list(all_coords[i])
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
 
-            full_img, full_sal_seg = stitch(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim)
+            if args.num_processes > 1:
+                pool.apply(stitch, args=(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim))
+
+            else:
+                stitch(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim)
+        if args.num_processes > 1:
+            pool.close()
+            pool.join()
 
 
         wandb.log({
