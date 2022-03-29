@@ -212,8 +212,6 @@ def patch_saliency(coord):
                                               max_depth=args.hipe_max_depth)[0])
 
     sal_seg = torch.argmax(torch.cat(sal_maps, dim=1), dim=1).int()[0]
-    all_imgs.append(img)
-    all_sal_segs.append(sal_seg)
     if args.save_high_res_patches:
         wandb.log({
             'Prediction'           : label_list[torch.argmax(Y_prob)],
@@ -227,10 +225,9 @@ def patch_saliency(coord):
 
     y, x = coord // args.downsample
     x1, y1 = x + pdim, y + pdim
-
+    all_coords.append([x, x1, y, y1])
     all_imgs.append(img)
     all_sal_segs.append(sal_seg)
-    all_coords.append([x, x1, y, y1])
 
     return
 
@@ -353,7 +350,6 @@ if __name__ == '__main__':
             print('{}/{}'.format(i + 1, len(all_imgs)))
             img = all_imgs[i]
             sal_seg = all_sal_segs[i]
-            print(list(all_coords[i]))
             x, x1, y, y1 = list(all_coords[i])
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
 
