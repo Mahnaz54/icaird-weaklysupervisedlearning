@@ -196,7 +196,7 @@ def sort_coords(coords):
     return coords
 
 
-def patch_saliency(coord):
+def patch_saliency(coord, patch_level, patch_size, wsi, model):
     img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
     logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
     logits = np.round(logits.detach().numpy(), 2)[0]
@@ -225,16 +225,15 @@ def patch_saliency(coord):
 
     y, x = coord // args.downsample
     x1, y1 = x + pdim, y + pdim
-    all_coords.append([x, x1, y, y1])
-    all_imgs.append(img)
-    all_sal_segs.append(sal_seg)
+    coords = [x, x1, y, y1]
 
-    return
+    return img, sal_seg, coords
 
 
 def stitch(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim):
     full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
     full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
+    return full_img, full_sal_seg
 
 
 if __name__ == '__main__':
@@ -321,15 +320,16 @@ if __name__ == '__main__':
 
         coords = sort_coords(coords)[:max_patches]
         print('Generating patch-level saliency...')
+
         if args.num_processes > 1:
             pool = Pool(args.num_processes)
-            pool.map_async(patch_saliency, coords)
+            res = [pool.apply(patch_saliency, (c, patch_level, patch_size, wsi, model)) for c in coords]
             pool.close()
             pool.join()
         else:
-            for i, coord in enumerate(coords):
-                patch_saliency(coord)
+            res = [patch_saliency(c, patch_level, patch_size, wsi, model) for c in coords]
 
+        print(res)
 
         print(all_coords)
         all_coords = np.array(all_coords)
@@ -344,7 +344,6 @@ if __name__ == '__main__':
         full_sal_seg = torch.zeros((im_x, im_y)) + num_classes
 
         print('Stitching...')
-        if args.num_processes > 1: pool = Pool(args.num_processes)
 
         for i in range(len(all_imgs)):
             print('{}/{}'.format(i + 1, len(all_imgs)))
@@ -353,15 +352,7 @@ if __name__ == '__main__':
             x, x1, y, y1 = list(all_coords[i])
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
 
-            if args.num_processes > 1:
-                pool.apply_async(stitch, args=(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim))
-
-            else:
-                stitch(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim)
-
-        if args.num_processes > 1:
-            pool.close()
-            pool.join()
+            full_img, full_sal_seg = stitch(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim)
 
 
         wandb.log({
