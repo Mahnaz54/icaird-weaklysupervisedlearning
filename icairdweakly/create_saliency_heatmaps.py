@@ -169,7 +169,7 @@ def flat_perturbation(model, input, target, k_size=1, step_size=-1):
     num_occs = 0
     for x in x_steps:
         for y in y_steps:
-            print('{}/{}'.format(x*y, input_x_dim*input_y_dim))
+            print('{}/{}'.format(num_occs, len(x_steps)*len(y_steps)))
             occ_im = input.clone()
             occ_im[:, :, y: y + k_size, x: x + k_size] = torch.mean(input[:, :, y: y + k_size, x: x + k_size],
                                                                     axis=(-1, -2), keepdims=True)
