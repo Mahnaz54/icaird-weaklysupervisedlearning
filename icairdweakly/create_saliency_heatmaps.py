@@ -39,7 +39,7 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
     if verbose: print('\nBelieve the HiPe!')
     with torch.no_grad():
         dev = input.device
-        print('Using device: {}'.format(dev), flush=True)
+        print('Using device: {}'.format(dev))
         if dev == 'cpu':
             batch_size = 1
         bn, channels, input_y_dim, input_x_dim = input.shape
@@ -50,7 +50,7 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
         base_max_depth = int(np.log2(dim / num_cells)) - 2
         if max_depth == -1 or max_depth > base_max_depth + 2:
             max_depth = base_max_depth
-        if verbose: print('Max depth: {}'.format(max_depth), flush=True)
+        if verbose: print('Max depth: {}'.format(max_depth))
         saliency = torch.zeros((1, 1, input_y_dim, input_x_dim), device=dev)
         max_batch = batch_size
 
@@ -80,7 +80,7 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
             y_cell_dim = input_y_dim // num_cells
 
             if verbose:
-                print('Depth: {}, {} x {} Cell Dim'.format(depth, y_cell_dim, x_cell_dim), flush=True)
+                print('Depth: {}, {} x {} Cell Dim'.format(depth, y_cell_dim, x_cell_dim))
             possible_masks = 0
 
             for x in x_ixs:
@@ -119,7 +119,7 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
                             b_list.append(b_image)
 
             num_masks = len(masks_list)
-            if verbose: print('Selected {}/{} masks at depth {}'.format(num_masks, possible_masks, depth), flush=True)
+            if verbose: print('Selected {}/{} masks at depth {}'.format(num_masks, possible_masks, depth))
             if num_masks == 0:
                 depth -= 1
                 break
@@ -149,7 +149,7 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
 
                 saliency += torch.sum(sal, dim=(0, 1))
 
-        if verbose: print('Used {} masks in total.'.format(total_masks), flush=True)
+        if verbose: print('Used {} masks in total.'.format(total_masks))
         if resize is not None:
             saliency = F.interpolate(saliency, (resize[1], resize[0]), mode=interp_mode)
         if return_info:
@@ -200,7 +200,7 @@ def patch_saliency(coord):
     img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
     logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
     logits = np.round(logits.detach().numpy(), 2)[0]
-    print('{}/{} Patch coords: {} Logits: {}'.format(i + 1, max_patches, coord, logits), flush=True)
+    print('{}/{} Patch coords: {} Logits: {}'.format(i + 1, max_patches, coord, logits))
     sal_maps = []
     for c in range(num_classes):
         if args.use_flat_perturbation:
@@ -321,16 +321,15 @@ if __name__ == '__main__':
 
         coords = sort_coords(coords)[:max_patches]
         print('Generating patch-level saliency...')
-        if args.num_processes > 1: pool = Pool(args.num_processes)
-        for i, coord in enumerate(coords):
-            print('Patch {}/{}'.format(i, max_patches))
-            if args.num_processes > 1:
-                pool.apply_async(patch_saliency, args=(coord,))
-            else:
-                patch_saliency(coord)
         if args.num_processes > 1:
+            pool = Pool(args.num_processes)
+            pool.map_async(patch_saliency, coords)
             pool.close()
             pool.join()
+        else:
+            for i, coord in enumerate(coords):
+                patch_saliency(coord)
+
 
         print(all_coords)
         all_coords = np.array(all_coords)
