@@ -324,14 +324,15 @@ if __name__ == '__main__':
 
         coords = sort_coords(coords)[:max_patches]
         print('Generating patch-level saliency...')
-        pool = Pool(args.num_processes)
+        if args.num_processes > 1: pool = Pool(args.num_processes)
         for i, coord in enumerate(coords):
             if args.num_processes > 1:
                 pool.apply_async(patch_saliency, args=(coord,))
             else:
                 patch_saliency(coord)
-        pool.close()
-        pool.join()
+        if args.num_processes > 1:
+            pool.close()
+            pool.join()
 
         print(all_coords)
         all_coords = np.array(all_coords)
@@ -346,7 +347,7 @@ if __name__ == '__main__':
         full_sal_seg = torch.zeros((im_x, im_y)) + num_classes
 
         print('Stitching...')
-        pool = Pool(args.num_processes)
+        if args.num_processes > 1: pool = Pool(args.num_processes)
 
         for i in range(len(all_imgs)):
             print('{}/{}'.format(i + 1, len(all_imgs)))
@@ -360,8 +361,9 @@ if __name__ == '__main__':
 
             else:
                 stitch(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim)
-        pool.close()
-        pool.join()
+        if args.num_processes > 1:
+            pool.close()
+            pool.join()
 
 
         wandb.log({
