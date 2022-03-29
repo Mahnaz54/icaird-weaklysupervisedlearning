@@ -146,7 +146,9 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
                 else:
                     sal = perturbed_outputs.reshape(1,NUM_CLASSES,1,1) * torch.abs(masks - 1)
 
-                saliency += torch.sum(sal, dim=(0, 1))
+                print(sal.shape, saliency.shape)
+
+                saliency += sal
 
         if verbose: print('Used {} masks in total.'.format(total_masks))
         if resize is not None:
@@ -295,9 +297,7 @@ if __name__ == '__main__':
                                                               interp_mode=args.hipe_interp_mode, verbose=True,
                                                               max_depth=args.hipe_max_depth)
 
-            print(sal_maps.shape)
             sal_seg = torch.argmax(sal_maps, dim=0).int()
-            print(sal_seg.shape)
             all_imgs.append(img)
             all_sal_segs.append(sal_seg)
             if args.save_high_res_patches:
