@@ -159,12 +159,21 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
     y_steps = range(0, input_y_dim - k_size + 1, step_size)
     heatmap = torch.zeros((NUM_CLASSES, input_y_dim, input_x_dim))
     num_occs = 0
+
+    blur_substrate = blur(input)
+
     for x in x_steps:
         for y in y_steps:
             print('{}/{}'.format(num_occs, len(x_steps) * len(y_steps)))
             occ_im = input.clone()
-            occ_im[:, :, y: y + k_size, x: x + k_size] = torch.mean(input[:, :, y: y + k_size, x: x + k_size],
-                                    axis=(-1, -2), keepdims=True)
+
+            if args.perturbation_type == 'mean':
+                occ_im[:, :, y: y + k_size, x: x + k_size] = torch.mean(input[:, :, y: y + k_size, x: x + k_size],
+                                        axis=(-1, -2), keepdims=True)
+            if args.perturbation_type == 'fade':
+                occ_im[:, :, y: y + k_size, x: x + k_size] = 0.0
+            if args.perturbation_type == 'blur':
+                occ_im[:, :, y: y + k_size, x: x + k_size] = blur_substrate[:, :, y: y + k_size, x: x + k_size]
 
             heatmap[:, y:y+k_size, x:x+k_size] += torch.relu(output - model(occ_im)[0][0]).reshape(NUM_CLASSES,1,1)
             num_occs += 1
@@ -187,7 +196,6 @@ def sort_coords(coords, centre):
     centre = centre.split(',')
     x, y = int(centre[0]), int(centre[1])
     print('Sorting patches around {},{}'.format(x, y))
-
     coords = list(coords)
     coords.sort(key=lambda p: np.abs(x - p[0]) + np.abs(y - p[1]))
     return coords
@@ -204,7 +212,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_patches', type=int, default=-1, help='Number of patches to extract and segment')
     parser.add_argument('--hipe_max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
                                                                       'more detailed but takes much longer.')
-    parser.add_argument('--hipe_perturbation_type', default='mean', help='Perturbation substrate for use in '
+    parser.add_argument('--perturbation_type', default='mean', help='Perturbation substrate for use in '
                                                                          'hierarchical perturbation.')
     parser.add_argument('--hipe_interp_mode', default='nearest', help='Interpolation mode for hierarchical '
                                                                       'perturbation')
@@ -290,7 +298,7 @@ if __name__ == '__main__':
 
             else:
                 sal_maps, _ = hierarchical_perturbation(model, img.unsqueeze(0),
-                                                              perturbation_type=args.hipe_perturbation_type,
+                                                              perturbation_type=args.perturbation_type,
                                                               interp_mode=args.hipe_interp_mode, verbose=True,
                                                               max_depth=args.hipe_max_depth)
 
