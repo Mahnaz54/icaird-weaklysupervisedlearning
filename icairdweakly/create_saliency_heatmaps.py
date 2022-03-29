@@ -137,9 +137,9 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
                 masks = F.interpolate(masks, (input_y_dim, input_x_dim), mode=interp_mode)
 
                 if perturbation_type == 'fade':
-                    perturbed_outputs = diff_func(output - model(input * masks))
+                    perturbed_outputs = diff_func(output - model(input * masks)[0])
                 else:
-                    perturbed_outputs = diff_func(output - model(b_imgs))
+                    perturbed_outputs = diff_func(output - model(b_imgs)[0])
 
                 if len(list(perturbed_outputs.shape)) == 1:
                     sal = perturbed_outputs.reshape(-1, 1, 1, 1) * torch.abs(masks - 1)
@@ -159,7 +159,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
 
 def flat_perturbation(model, input, k_size=1, step_size=-1):
     bn, channels, input_y_dim, input_x_dim = input.shape
-    output = model(input)
+    output = model(input)[0]
     if step_size == -1:
         step_size = k_size//2
     x_steps = range(0, input_x_dim - k_size + 1, step_size)
@@ -174,7 +174,7 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
                                     axis=(-1, -2), keepdims=True)
             print(output)
             print(model(occ_im))
-            heatmap[:,:, y:y+k_size, x:x+k_size] += max(output - model(occ_im), 0)
+            heatmap[:,:, y:y+k_size, x:x+k_size] += max(output - model(occ_im)[0], 0)
             num_occs += 1
 
     return heatmap[0], num_occs
