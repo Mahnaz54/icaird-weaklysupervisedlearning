@@ -176,7 +176,7 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
             heatmap[:,:, y:y+k_size, x:x+k_size] += torch.relu(output - model(occ_im)[0][0]).reshape(1,NUM_CLASSES,1,1)
             num_occs += 1
 
-    return heatmap[0], num_occs
+    return heatmap, num_occs
 
 
 class ModelUmbrella(nn.Module):
