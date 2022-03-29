@@ -228,7 +228,11 @@ def patch_saliency(coord):
     y, x = coord // args.downsample
     x1, y1 = x + pdim, y + pdim
 
-    return img, sal_seg, [x, x1, y, y1]
+    all_imgs.append(img)
+    all_sal_segs.append(sal_seg)
+    all_coords.append(coords)
+
+    return
 
 
 def stitch(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim):
@@ -313,11 +317,6 @@ if __name__ == '__main__':
         all_sal_segs = []
         all_coords = []
 
-        def log_patch(img, sal_seg, coords):
-            all_imgs.append(img)
-            all_sal_segs.append(sal_seg)
-            all_coords.append(coords)
-
         max_patches = len(coords) if args.max_patches == -1 or args.max_patches > len(coords) else args.max_patches
         wandb.log({
             'Patch Level': patch_level, 'Patch Size': patch_size, 'Num Patches': max_patches, 'Slide': slide_name
@@ -327,7 +326,10 @@ if __name__ == '__main__':
         print('Generating patch-level saliency...')
         pool = Pool(args.num_processes)
         for i, coord in enumerate(coords):
-            pool.apply_async(patch_saliency, args=(coord,), callback=log_patch)
+            if args.num_processes > 1:
+                pool.apply_async(patch_saliency, args=(coord,))
+            else:
+                patch_saliency(coord)
         pool.close()
         pool.join()
 
@@ -353,7 +355,11 @@ if __name__ == '__main__':
             x, x1, y, y1 = all_coords[i]
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
 
-            pool.apply_async(stitch, args=(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim))
+            if args.num_processes > 1:
+                pool.apply_async(stitch, args=(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim))
+
+            else:
+                stitch(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim)
         pool.close()
         pool.join()
 
