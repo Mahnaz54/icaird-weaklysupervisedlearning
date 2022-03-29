@@ -323,7 +323,7 @@ if __name__ == '__main__':
         print('Generating patch-level saliency...')
         if args.num_processes > 1:
             pool = Pool(args.num_processes)
-            pool.map_async(patch_saliency, coords)
+            result = pool.map(patch_saliency, coords)
             pool.close()
             pool.join()
         else:
@@ -354,7 +354,7 @@ if __name__ == '__main__':
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
 
             if args.num_processes > 1:
-                pool.apply_async(stitch, args=(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim))
+                pool.apply(stitch, args=(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim))
 
             else:
                 stitch(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim)
