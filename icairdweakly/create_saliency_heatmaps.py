@@ -32,7 +32,7 @@ def blur(x, klen=11, ksig=5):
     return F.conv2d(x, kern, padding=klen // 2)
 
 
-def hierarchical_perturbation(model, input, target, interp_mode='nearest', resize=None, batch_size=1,
+def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, batch_size=1,
                               perturbation_type='mean', threshold_mode='mid-range', return_info=False,
                               diff_func=torch.relu, max_depth=-1, verbose=True):
     if verbose: print('\nBelieve the HiPe!')
@@ -50,13 +50,13 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
         if max_depth == -1 or max_depth > base_max_depth + 2:
             max_depth = base_max_depth
         if verbose: print('Max depth: {}'.format(max_depth))
-        saliency = torch.zeros((1, 1, input_y_dim, input_x_dim), device=dev)
+        saliency = torch.zeros((1, num_classes, input_y_dim, input_x_dim), device=dev)
         max_batch = batch_size
 
         thresholds_d_list = []
         masks_d_list = []
 
-        output = model(input)[0][:, target]
+        output = model(input)[0]
 
         if perturbation_type == 'blur':
             pre_b_image = blur(input.clone().cpu()).to(dev)
@@ -137,9 +137,9 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
                 masks = F.interpolate(masks, (input_y_dim, input_x_dim), mode=interp_mode)
 
                 if perturbation_type == 'fade':
-                    perturbed_outputs = diff_func(output - model(input * masks)[0][:, target])
+                    perturbed_outputs = diff_func(output - model(input * masks))
                 else:
-                    perturbed_outputs = diff_func(output - model(b_imgs)[0][:, target])
+                    perturbed_outputs = diff_func(output - model(b_imgs))
 
                 if len(list(perturbed_outputs.shape)) == 1:
                     sal = perturbed_outputs.reshape(-1, 1, 1, 1) * torch.abs(masks - 1)
@@ -152,19 +152,19 @@ def hierarchical_perturbation(model, input, target, interp_mode='nearest', resiz
         if resize is not None:
             saliency = F.interpolate(saliency, (resize[1], resize[0]), mode=interp_mode)
         if return_info:
-            return saliency, {'thresholds': thresholds_d_list, 'masks': masks_d_list, 'total_masks': total_masks}
+            return saliency[0], {'thresholds': thresholds_d_list, 'masks': masks_d_list, 'total_masks': total_masks}
         else:
-            return saliency, total_masks
+            return saliency[0], total_masks
 
 
-def flat_perturbation(model, input, target, k_size=1, step_size=-1):
+def flat_perturbation(model, input, k_size=1, step_size=-1):
     bn, channels, input_y_dim, input_x_dim = input.shape
-    output = model(input)[0][:, target]
+    output = model(input)
     if step_size == -1:
         step_size = k_size//2
     x_steps = range(0, input_x_dim - k_size + 1, step_size)
     y_steps = range(0, input_y_dim - k_size + 1, step_size)
-    heatmap = torch.zeros_like(input)
+    heatmap = torch.zeros_like(1, num_classes, input_y_dim, input_x_dim)
     num_occs = 0
     for x in x_steps:
         for y in y_steps:
@@ -172,11 +172,10 @@ def flat_perturbation(model, input, target, k_size=1, step_size=-1):
             occ_im = input.clone()
             occ_im[:, :, y: y + k_size, x: x + k_size] = torch.mean(input[:, :, y: y + k_size, x: x + k_size],
                                     axis=(-1, -2), keepdims=True)
-            diff = max(output - model(occ_im)[0][:, target], 0)
-            heatmap[:,:, y:y+k_size, x:x+k_size] += diff
+            heatmap[:,:, y:y+k_size, x:x+k_size] += max(output - model(occ_im), 0)
             num_occs += 1
 
-    return heatmap, num_occs
+    return heatmap[0], num_occs
 
 
 class ModelUmbrella(nn.Module):
@@ -285,18 +284,17 @@ if __name__ == '__main__':
             logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
             logits = np.round(logits.detach().numpy(), 2)[0]
             print('{}/{} Patch coords: {} Logits: {}'.format(i + 1, max_patches, coord, logits))
-            sal_maps = []
-            for c in range(num_classes):
-                if args.use_flat_perturbation:
-                    sal_maps.append(
-                            flat_perturbation(model, img.unsqueeze(0), c, k_size=args.flat_kernel_size)[0])
-                else:
-                    sal_maps.append(hierarchical_perturbation(model, img.unsqueeze(0), c,
+
+            if args.use_flat_perturbation:
+                sal_maps = flat_perturbation(model, img.unsqueeze(0), k_size=args.flat_kernel_size)
+
+            else:
+                sal_maps = hierarchical_perturbation(model, img.unsqueeze(0),
                                                               perturbation_type=args.hipe_perturbation_type,
                                                               interp_mode=args.hipe_interp_mode, verbose=True,
-                                                              max_depth=args.hipe_max_depth)[0])
+                                                              max_depth=args.hipe_max_depth)
 
-            sal_seg = torch.argmax(torch.cat(sal_maps, dim=1), dim=1).int()[0]
+            sal_seg = torch.argmax(sal_maps, dim=1).int()[0]
             all_imgs.append(img)
             all_sal_segs.append(sal_seg)
             if args.save_high_res_patches:
