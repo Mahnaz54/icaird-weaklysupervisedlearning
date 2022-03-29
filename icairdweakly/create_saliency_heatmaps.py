@@ -323,6 +323,7 @@ if __name__ == '__main__':
         print('Generating patch-level saliency...')
         if args.num_processes > 1: pool = Pool(args.num_processes)
         for i, coord in enumerate(coords):
+            print('Patch {}/{}'.format(i, max_patches))
             if args.num_processes > 1:
                 pool.apply_async(patch_saliency, args=(coord,))
             else:
