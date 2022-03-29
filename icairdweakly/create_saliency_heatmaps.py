@@ -15,7 +15,6 @@ import wandb
 from scipy.ndimage.filters import gaussian_filter
 from PIL import Image
 
-
 def gkern(klen, nsig):
     inp = np.zeros((klen, klen))
     inp[klen // 2, klen // 2] = 1
@@ -184,10 +183,11 @@ class ModelUmbrella(nn.Module):
         return self.inf_model(self.feature_extractor(x))
 
 
-def sort_coords(coords):
+def sort_coords(coords, center):
+    center = center.split(',')
+    x, y = int(center[0]), int(center[1])
     coords = list(coords)
-    first_coord = coords[0]
-    coords.sort(key=lambda p: (first_coord[0] - p[0])**2 + (first_coord[1] - p[1])**2)
+    coords.sort(key=lambda p: (x - p[0])**2 + (y - p[1])**2)
     return coords
 
 
@@ -222,6 +222,7 @@ if __name__ == '__main__':
                                                                                             'but lacks relative '
                                                                                             'saliency detail.')
     parser.add_argument('--flat_kernel_size', type=int, default=32, help='Kernel size for flat perturbation.')
+    parser.add_argument('--coord', default='0,0', help='Coordinate in form x,y of central patch')
     parser.add_argument('--save_path', default='', help='where to save saliency segmentation png file. If empty, '
                                                         'no local save is used. All images are logged to WandB in any case.')
 
@@ -272,7 +273,7 @@ if __name__ == '__main__':
                       'Slide'      : slide_name
                   })
 
-        coords = sort_coords(coords)
+        coords = sort_coords(coords, center=args.coord)
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
             if i == max_patches:
