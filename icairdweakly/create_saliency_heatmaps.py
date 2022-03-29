@@ -329,6 +329,7 @@ if __name__ == '__main__':
             for i, coord in enumerate(coords):
                 p.apply_async(patch_saliency, args=(coord,), callback=log_patch)
 
+        print(all_coords)
         all_coords = np.array(all_coords)
         min_x, max_x, min_y, max_y = np.min(all_coords[0]), np.max(all_coords[1]), np.min(all_coords[2]), \
                                      np.max(all_coords[3])
