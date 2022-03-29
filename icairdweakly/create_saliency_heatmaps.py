@@ -172,9 +172,7 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
             occ_im = input.clone()
             occ_im[:, :, y: y + k_size, x: x + k_size] = torch.mean(input[:, :, y: y + k_size, x: x + k_size],
                                     axis=(-1, -2), keepdims=True)
-            print(output)
-            print(model(occ_im))
-            heatmap[:,:, y:y+k_size, x:x+k_size] += max(output - model(occ_im)[0], 0)
+            heatmap[:,:, y:y+k_size, x:x+k_size] += torch.relu(output - model(occ_im)[0])
             num_occs += 1
 
     return heatmap[0], num_occs
