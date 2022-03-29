@@ -302,7 +302,7 @@ if __name__ == '__main__':
             if args.save_high_res_patches:
                 wandb.log({
                     'Prediction'       : label_list[torch.argmax(Y_prob)],
-                    'Saliency'             : [wandb.Image(sal_maps[h], caption=label_list[h]) for h in range(
+                    'Saliency'             : [wandb.Image(sal_maps[0,n], caption=label_list[n]) for n in range(
                             NUM_CLASSES)],
                     'Saliency Segmentation': wandb.Image(img, caption=str(logits), masks={
                         "predictions": {
