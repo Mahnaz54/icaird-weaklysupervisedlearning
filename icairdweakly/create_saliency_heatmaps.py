@@ -50,7 +50,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
         if max_depth == -1 or max_depth > base_max_depth + 2:
             max_depth = base_max_depth
         if verbose: print('Max depth: {}'.format(max_depth))
-        saliency = torch.zeros((1, num_classes, input_y_dim, input_x_dim), device=dev)
+        saliency = torch.zeros((1, NUM_CLASSES, input_y_dim, input_x_dim), device=dev)
         max_batch = batch_size
 
         thresholds_d_list = []
@@ -164,7 +164,7 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
         step_size = k_size//2
     x_steps = range(0, input_x_dim - k_size + 1, step_size)
     y_steps = range(0, input_y_dim - k_size + 1, step_size)
-    heatmap = torch.zeros((1, num_classes, input_y_dim, input_x_dim))
+    heatmap = torch.zeros((1, NUM_CLASSES, input_y_dim, input_x_dim))
     num_occs = 0
     for x in x_steps:
         for y in y_steps:
@@ -173,8 +173,9 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
             occ_im[:, :, y: y + k_size, x: x + k_size] = torch.mean(input[:, :, y: y + k_size, x: x + k_size],
                                     axis=(-1, -2), keepdims=True)
 
-            print(torch.relu(output - model(occ_im)[0]).shape)
-            heatmap[:,:, y:y+k_size, x:x+k_size] += torch.relu(output - model(occ_im)[0][0])
+            preds = torch.relu(output - model(occ_im)[0][0])
+            for c in NUM_CLASSES:
+                heatmap[:,c, y:y+k_size, x:x+k_size] += preds[c]
             num_occs += 1
 
     return heatmap[0], num_occs
@@ -244,8 +245,8 @@ if __name__ == '__main__':
     model_args = argparse.Namespace(
         **{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
     label_list = ['malignant', 'insufficient', 'other_benign']
-    num_classes = len(label_list)
-    class_labels = dict(zip(range(0, num_classes), label_list))
+    NUM_CLASSES = len(label_list)
+    class_labels = dict(zip(range(0, NUM_CLASSES), label_list))
 
     inf_model = initiate_model(model_args, args.ckpt_path).to(device)
     inf_model.eval()
@@ -303,7 +304,7 @@ if __name__ == '__main__':
                 wandb.log({
                     'Prediction'       : label_list[torch.argmax(Y_prob)],
                     'Saliency'             : [wandb.Image(sal_maps[h], caption=label_list[h]) for h in range(
-                            num_classes)],
+                            NUM_CLASSES)],
                     'Saliency Segmentation': wandb.Image(img, caption=str(logits), masks={
                         "predictions": {
                             "mask_data": sal_seg.numpy(), "class_labels": class_labels
@@ -325,7 +326,7 @@ if __name__ == '__main__':
         print('Full image size: {}x{}'.format(im_x, im_y))
 
         full_img = torch.ones((3, im_x, im_y))
-        full_sal_seg = torch.zeros((im_x, im_y)) + num_classes
+        full_sal_seg = torch.zeros((im_x, im_y)) + NUM_CLASSES
 
         print('Stitching...')
         print(all_coords)
