@@ -283,11 +283,9 @@ if __name__ == '__main__':
                       'Slide'      : slide_name
                   })
 
-        coords = sort_coords(coords, centre=args.centre)
+        coords = sort_coords(coords, centre=args.centre)[:max_patches]
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
-            if i == max_patches:
-                break
             img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
             logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
             logits = np.round(logits.detach().numpy(), 2)[0]
@@ -318,7 +316,7 @@ if __name__ == '__main__':
                         })
                     })
 
-            y, x = coord // args.downsample
+            y, x = coord
             if x < min_x: min_x = x
             if y < min_y: min_y = y
             x1, y1 = x + pdim, y + pdim
@@ -327,7 +325,7 @@ if __name__ == '__main__':
 
             all_coords.append((x, x1, y, y1))
 
-        im_x, im_y = max_x - min_x, max_y - min_y
+        im_x, im_y = max_x // args.downsample - min_x // args.downsample, max_y // args.downsample - min_y // args.downsample
 
         print('Full image size: {}x{}'.format(im_x, im_y))
 
@@ -343,8 +341,8 @@ if __name__ == '__main__':
             img = all_imgs[i]
             sal_seg = all_sal_segs[i]
             sal_maps = all_sal_maps[i]
-            x, x1, y, y1 = all_coords[i]
-            x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
+            x, x1, y, y1 = all_coords[i] // args.downsample
+            x, x1, y, y1 = x - min_x// args.downsample, x1 - min_x// args.downsample, y - min_y// args.downsample, y1 - min_y// args.downsample
 
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
             full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
@@ -352,8 +350,7 @@ if __name__ == '__main__':
 
         print('Logging images...')
         wandb.log({
-            'Region coords': [min_x * args.downsample, max_x * args.downsample, min_y * args.downsample,
-                              max_y * args.downsample],
+            'Region coords': [min_x, max_x, min_y, max_y],
             'Saliency'             : [wandb.Image(full_sal_map[n], caption=label_list[n]) for n in range(
                             NUM_CLASSES)],
             'Full Saliency Segmentation': wandb.Image(full_img, masks={
