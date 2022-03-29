@@ -295,7 +295,7 @@ if __name__ == '__main__':
                                                               interp_mode=args.hipe_interp_mode, verbose=True,
                                                               max_depth=args.hipe_max_depth)
 
-            print(sal_maps.shape)
+            print(sal_maps)
             sal_seg = torch.argmax(sal_maps, dim=1).int()[0]
             all_imgs.append(img)
             all_sal_segs.append(sal_seg)
