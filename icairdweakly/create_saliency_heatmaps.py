@@ -230,7 +230,7 @@ def patch_saliency(coord):
 
     all_imgs.append(img)
     all_sal_segs.append(sal_seg)
-    all_coords.append(coords)
+    all_coords.append([x, x1, y, y1])
 
     return
 
