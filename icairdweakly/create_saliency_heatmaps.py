@@ -196,8 +196,8 @@ def sort_coords(coords):
     return coords
 
 
-def patch_saliency(coord, patch_level, patch_size, wsi, model):
-    img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
+def patch_saliency(coord, patch_level, patch_size, model):
+    img = transforms(WSI.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
     logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
     logits = np.round(logits.detach().numpy(), 2)[0]
     print('{}/{} Patch coords: {} Logits: {}'.format(i + 1, max_patches, coord, logits))
@@ -296,7 +296,7 @@ if __name__ == '__main__':
     model = ModelUmbrella(feature_extractor, inf_model)
 
     # load WSI
-    wsi = WholeSlideImage(args.slide_path)
+    WSI = WholeSlideImage(args.slide_path)
     transforms = default_transforms()
     # load patch data
     with h5py.File(args.patch_path, 'r') as f:
@@ -304,7 +304,7 @@ if __name__ == '__main__':
         patch_level = coords.attrs['patch_level']
         patch_size = coords.attrs['patch_size']
         slide_name = args.slide_path.split('/')[-1].split('.')[0]
-        _, ydim, _, xdim = wsi.level_dimensions[patch_level]
+        _, ydim, _, xdim = WSI.level_dimensions[patch_level]
         xdim, ydim = xdim // args.downsample, ydim // args.downsample
         min_x, min_y, max_x, max_y = xdim, ydim, 0, 0
 
@@ -323,11 +323,11 @@ if __name__ == '__main__':
 
         if args.num_processes > 1:
             pool = Pool(args.num_processes)
-            res = [pool.apply(patch_saliency, (c, patch_level, patch_size, wsi, model)) for c in coords]
+            res = [pool.apply(patch_saliency, (c, patch_level, patch_size, model)) for c in coords]
             pool.close()
             pool.join()
         else:
-            res = [patch_saliency(c, patch_level, patch_size, wsi, model) for c in coords]
+            res = [patch_saliency(c, patch_level, patch_size, model) for c in coords]
 
         print(res)
 
