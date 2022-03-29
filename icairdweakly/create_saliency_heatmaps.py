@@ -186,7 +186,8 @@ class ModelUmbrella(nn.Module):
 
 def sort_coords(coords):
     coords = list(coords)
-    coords.sort(key=lambda p: p[0] + p[1])
+    first_coord = coords[0]
+    coords.sort(key=lambda p: (first_coord[0] - p[0])**2 + (first_coord[1] - p[1])**2)
     return coords
 
 
