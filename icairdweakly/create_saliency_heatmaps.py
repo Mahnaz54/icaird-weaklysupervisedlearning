@@ -146,7 +146,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
                 if len(list(perturbed_outputs.shape)) == 1:
                     sal = perturbed_outputs.reshape(-1, 1, 1, 1) * torch.abs(masks - 1)
                 else:
-                    sal = perturbed_outputs * torch.abs(masks - 1)
+                    sal = perturbed_outputs.reshape(1,NUM_CLASSES,1,1) * torch.abs(masks - 1)
 
                 saliency += torch.sum(sal, dim=(0, 1))
 
