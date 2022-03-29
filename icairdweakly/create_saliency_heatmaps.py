@@ -32,15 +32,13 @@ def blur(x, klen=11, ksig=5):
     return F.conv2d(x, kern, padding=klen // 2)
 
 
-def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, batch_size=1,
+def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None,
                               perturbation_type='mean', threshold_mode='mid-range', return_info=False,
                               diff_func=torch.relu, max_depth=-1, verbose=True):
     if verbose: print('\nBelieve the HiPe!')
     with torch.no_grad():
         dev = input.device
         print('Using device: {}'.format(dev))
-        if dev == 'cpu':
-            batch_size = 1
         bn, channels, input_y_dim, input_x_dim = input.shape
         dim = min(input_x_dim, input_y_dim)
         total_masks = 0
@@ -51,7 +49,6 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
             max_depth = base_max_depth
         if verbose: print('Max depth: {}'.format(max_depth))
         saliency = torch.zeros((1, NUM_CLASSES, input_y_dim, input_x_dim), device=dev)
-        max_batch = batch_size
 
         thresholds_d_list = []
         masks_d_list = []
@@ -126,12 +123,9 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
             masks_d_list.append(num_masks)
 
             while len(masks_list) > 0:
-                m_ix = min(len(masks_list), max_batch)
                 if perturbation_type != 'fade':
-                    b_imgs = torch.cat(b_list[:m_ix])
-                    del b_list[:m_ix]
-                masks = torch.cat(masks_list[:m_ix])
-                del masks_list[:m_ix]
+                    b_imgs = b_list.pop()
+                masks = masks_list.pop()
 
                 # resize low-res masks to input size
                 masks = F.interpolate(masks, (input_y_dim, input_x_dim), mode=interp_mode)
@@ -268,6 +262,7 @@ if __name__ == '__main__':
         pdim = patch_size // args.downsample
         all_imgs = []
         all_sal_segs = []
+        all_sal_maps = []
         all_coords = []
 
         max_patches = len(coords) if args.max_patches == -1 or args.max_patches > len(coords) else args.max_patches
@@ -298,6 +293,7 @@ if __name__ == '__main__':
             sal_seg = torch.argmax(sal_maps, dim=0).int()
             all_imgs.append(img)
             all_sal_segs.append(sal_seg)
+            all_sal_maps.append(sal_maps)
             if args.save_high_res_patches:
                 wandb.log({
                     'Prediction'       : label_list[torch.argmax(Y_prob)],
@@ -325,6 +321,7 @@ if __name__ == '__main__':
 
         full_img = torch.ones((3, im_x, im_y))
         full_sal_seg = torch.zeros((im_x, im_y)) + NUM_CLASSES
+        full_sal_map = torch.zeros((NUM_CLASSES, im_x, im_y))
 
         print('Stitching...')
         print(all_coords)
@@ -333,15 +330,19 @@ if __name__ == '__main__':
             print('{}/{}'.format(i + 1, len(all_imgs)))
             img = all_imgs[i]
             sal_seg = all_sal_segs[i]
+            sal_maps = all_sal_maps[i]
             x, x1, y, y1 = all_coords[i]
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
 
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
             full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
+            full_sal_map[:, x:x1, y:y1] = F.interpolate(sal_maps.unsqueeze(0), (pdim, pdim))[0]
 
         wandb.log({
             'Region coords': [min_x * args.downsample, max_x * args.downsample, min_y * args.downsample,
                               max_y * args.downsample],
+            'Saliency'             : [wandb.Image(full_sal_map[n], caption=label_list[n]) for n in range(
+                            NUM_CLASSES)],
             'Full Saliency Segmentation': wandb.Image(full_img, masks={
                 "predictions": {
                     "mask_data": full_sal_seg.int().numpy(), "class_labels": class_labels
