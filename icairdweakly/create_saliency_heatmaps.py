@@ -353,7 +353,8 @@ if __name__ == '__main__':
             print('{}/{}'.format(i + 1, len(all_imgs)))
             img = all_imgs[i]
             sal_seg = all_sal_segs[i]
-            x, x1, y, y1 = all_coords[i]
+            print(list(all_coords[i]))
+            x, x1, y, y1 = list(all_coords[i])
             x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
 
             if args.num_processes > 1:
