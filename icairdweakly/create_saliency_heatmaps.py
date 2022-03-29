@@ -197,6 +197,7 @@ def sort_coords(coords):
 
 
 def patch_saliency(coord, patch_level, patch_size, model):
+    return 1,2,3
     img = transforms(WSI.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
     logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
     logits = np.round(logits.detach().numpy(), 2)[0]
