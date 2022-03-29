@@ -341,8 +341,8 @@ if __name__ == '__main__':
             img = all_imgs[i]
             sal_seg = all_sal_segs[i]
             sal_maps = all_sal_maps[i]
-            x, x1, y, y1 = all_coords[i] // args.downsample
-            x, x1, y, y1 = x - min_x// args.downsample, x1 - min_x// args.downsample, y - min_y// args.downsample, y1 - min_y// args.downsample
+            x, x1, y, y1 = all_coords[i]
+            x, x1, y, y1 = x// args.downsample - min_x// args.downsample, x1// args.downsample - min_x// args.downsample, y// args.downsample - min_y// args.downsample, y1// args.downsample - min_y// args.downsample
 
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
             full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
