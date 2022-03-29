@@ -184,6 +184,7 @@ class ModelUmbrella(nn.Module):
 
 
 def sort_coords(coords, centre):
+    print('Sorting patches around {}'.format(centre))
     centre = centre.split(',')
     x, y = int(centre[0]), int(centre[1])
     coords = list(coords)
