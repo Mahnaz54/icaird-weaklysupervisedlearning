@@ -14,6 +14,7 @@ import torch.nn.functional as F
 import wandb
 from scipy.ndimage.filters import gaussian_filter
 from PIL import Image
+from multiprocessing import Pool
 
 
 def gkern(klen, nsig):
@@ -170,9 +171,9 @@ def flat_perturbation(model, input, target, k_size=1, step_size=-1):
         for y in y_steps:
             occ_im = input.clone()
             occ_im[:, :, y: y + k_size, x: x + k_size] = torch.mean(input[:, :, y: y + k_size, x: x + k_size],
-                                    axis=(-1, -2), keepdims=True)
+                                                                    axis=(-1, -2), keepdims=True)
             diff = max(output - model(occ_im)[0][:, target], 0)
-            heatmap[:,:, y:y+k_size, x:x+k_size] += diff
+            heatmap[:, :, y:y + k_size, x:x + k_size] += diff
             num_occs += 1
 
     return heatmap, num_occs
@@ -193,6 +194,46 @@ def sort_coords(coords):
     coords = list(coords)
     coords.sort(key=lambda p: p[0] + p[1])
     return coords
+
+
+def patch_saliency(coord):
+    img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
+    logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
+    logits = np.round(logits.detach().numpy(), 2)[0]
+    print('{}/{} Patch coords: {} Logits: {}'.format(i + 1, max_patches, coord, logits))
+    sal_maps = []
+    for c in range(num_classes):
+        if args.use_flat_perturbation:
+            sal_maps.append(flat_perturbation(model, img.unsqueeze(0), c, k_size=args.flat_kernel_size)[0])
+        else:
+            sal_maps.append(
+                    hierarchical_perturbation(model, img.unsqueeze(0), c, perturbation_type=args.hipe_perturbation_type,
+                                              interp_mode=args.hipe_interp_mode, verbose=True,
+                                              max_depth=args.hipe_max_depth)[0])
+
+    sal_seg = torch.argmax(torch.cat(sal_maps, dim=1), dim=1).int()[0]
+    all_imgs.append(img)
+    all_sal_segs.append(sal_seg)
+    if args.save_high_res_patches:
+        wandb.log({
+            'Prediction'           : label_list[torch.argmax(Y_prob)],
+            'Saliency'             : [wandb.Image(sal_maps[h], caption=label_list[h]) for h in range(num_classes)],
+            'Saliency Segmentation': wandb.Image(img, caption=str(logits), masks={
+                "predictions": {
+                    "mask_data": sal_seg.numpy(), "class_labels": class_labels
+                    }
+                })
+            })
+
+    y, x = coord // args.downsample
+    x1, y1 = x + pdim, y + pdim
+
+    return img, sal_seg, [x, x1, y, y1]
+
+
+def stitch(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim):
+    full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
+    full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
 
 
 if __name__ == '__main__':
@@ -226,8 +267,10 @@ if __name__ == '__main__':
                                                                                             'but lacks relative '
                                                                                             'saliency detail.')
     parser.add_argument('--flat_kernel_size', type=int, default=32, help='Kernel size for flat perturbation.')
+    parser.add_argument('--num_processes', type=int, default=8, help='Number of parallel processes to run.')
     parser.add_argument('--save_path', default='', help='where to save saliency segmentation png file. If empty, '
-                                                        'no local save is used. All images are logged to WandB in any case.')
+                                                        'no local save is used. All images are logged to WandB in any '
+                                                        'case.')
 
     args = parser.parse_args()
 
@@ -241,7 +284,7 @@ if __name__ == '__main__':
     print('Device: {}'.format(device))
     # load models
     model_args = argparse.Namespace(
-        **{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
+            **{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
     label_list = ['malignant', 'insufficient', 'other_benign']
     num_classes = len(label_list)
     class_labels = dict(zip(range(0, num_classes), label_list))
@@ -270,55 +313,25 @@ if __name__ == '__main__':
         all_sal_segs = []
         all_coords = []
 
-        max_patches = len(coords) if args.max_patches == -1 or args.max_patches > len(coords) else args.max_patches
-        wandb.log({
-                      'Patch Level': patch_level, 'Patch Size': patch_size, 'Num Patches': max_patches,
-                      'Slide'      : slide_name
-                  })
-
-        coords = sort_coords(coords)
-        print('Generating patch-level saliency...')
-        for i, coord in enumerate(coords):
-            if i == max_patches:
-                break
-            img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
-            logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
-            logits = np.round(logits.detach().numpy(), 2)[0]
-            print('{}/{} Patch coords: {} Logits: {}'.format(i + 1, max_patches, coord, logits))
-            sal_maps = []
-            for c in range(num_classes):
-                if args.use_flat_perturbation:
-                    sal_maps.append(
-                            flat_perturbation(model, img.unsqueeze(0), c, k_size=args.flat_kernel_size)[0])
-                else:
-                    sal_maps.append(hierarchical_perturbation(model, img.unsqueeze(0), c,
-                                                              perturbation_type=args.hipe_perturbation_type,
-                                                              interp_mode=args.hipe_interp_mode, verbose=True,
-                                                              max_depth=args.hipe_max_depth)[0])
-
-            sal_seg = torch.argmax(torch.cat(sal_maps, dim=1), dim=1).int()[0]
+        def log_patch(img, sal_seg, coords):
             all_imgs.append(img)
             all_sal_segs.append(sal_seg)
-            if args.save_high_res_patches:
-                wandb.log({
-                    'Prediction'       : label_list[torch.argmax(Y_prob)],
-                    'Saliency'             : [wandb.Image(sal_maps[h], caption=label_list[h]) for h in range(
-                            num_classes)],
-                    'Saliency Segmentation': wandb.Image(img, caption=str(logits), masks={
-                        "predictions": {
-                            "mask_data": sal_seg.numpy(), "class_labels": class_labels
-                            }
-                        })
-                    })
+            all_coords.append(coords)
 
-            y, x = coord // args.downsample
-            if x < min_x: min_x = x
-            if y < min_y: min_y = y
-            x1, y1 = x + pdim, y + pdim
-            if x1 > max_x: max_x = x1
-            if y1 > max_y: max_y = y1
+        max_patches = len(coords) if args.max_patches == -1 or args.max_patches > len(coords) else args.max_patches
+        wandb.log({
+            'Patch Level': patch_level, 'Patch Size': patch_size, 'Num Patches': max_patches, 'Slide': slide_name
+            })
 
-            all_coords.append((x, x1, y, y1))
+        coords = sort_coords(coords)[:max_patches]
+        print('Generating patch-level saliency...')
+        with Pool(args.num_processes) as p:
+            for i, coord in enumerate(coords):
+                p.apply_async(patch_saliency, args=(coord,), callback=log_patch)
+
+        all_coords = np.array(all_coords)
+        min_x, max_x, min_y, max_y = np.min(all_coords[0]), np.max(all_coords[1]), np.min(all_coords[2]), \
+                                     np.max(all_coords[3])
 
         im_x, im_y = max_x - min_x, max_y - min_y
 
@@ -328,22 +341,20 @@ if __name__ == '__main__':
         full_sal_seg = torch.zeros((im_x, im_y)) + num_classes
 
         print('Stitching...')
-        print(all_coords)
+        with Pool(args.num_processes) as p:
+            for i in range(len(all_imgs)):
+                print('{}/{}'.format(i + 1, len(all_imgs)))
+                img = all_imgs[i]
+                sal_seg = all_sal_segs[i]
+                x, x1, y, y1 = all_coords[i]
+                x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
 
-        for i in range(len(all_imgs)):
-            print('{}/{}'.format(i + 1, len(all_imgs)))
-            img = all_imgs[i]
-            sal_seg = all_sal_segs[i]
-            x, x1, y, y1 = all_coords[i]
-            x, x1, y, y1 = x - min_x, x1 - min_x, y - min_y, y1 - min_y
+                p.apply_async(stitch, args=(full_img, full_sal_seg, img, sal_seg, x, x1, y, y1, pdim))
 
-            full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
-            full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
 
         wandb.log({
             'Region coords': [min_x * args.downsample, max_x * args.downsample, min_y * args.downsample,
-                              max_y * args.downsample],
-            'Full Saliency Segmentation': wandb.Image(full_img, masks={
+                              max_y * args.downsample], 'Full Saliency Segmentation': wandb.Image(full_img, masks={
                 "predictions": {
                     "mask_data": full_sal_seg.int().numpy(), "class_labels": class_labels
                     }
@@ -351,7 +362,8 @@ if __name__ == '__main__':
             })
 
         if len(args.save_path) > 0:
-            Image.fromarray(full_sal_seg.numpy()).save(args.save_path + '_saliency_segmentation_' + slide_name + '.png')
+            Image.fromarray(full_sal_seg.numpy()).save(
+                args.save_path + '_saliency_segmentation_' + slide_name + '.png')
         print('Done!')
 
     run.finish()
