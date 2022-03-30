@@ -306,7 +306,11 @@ if __name__ == '__main__':
                                                               max_depth=args.hipe_max_depth)
 
 
-            sal_seg = torch.argmax(sal_maps, dim=0).int()
+            max_seg = torch.argmax(sal_maps, dim=0).int()
+            min_seg = torch.argmin(sal_maps, dim=0).int()
+
+            sal_seg = torch.where((min_seg != max_seg), max_seg, torch.zeros_like(max_seg)+ NUM_CLASSES)
+
             sal_maps = normalise(sal_maps)
             all_imgs.append(img)
             all_sal_segs.append(sal_seg)
