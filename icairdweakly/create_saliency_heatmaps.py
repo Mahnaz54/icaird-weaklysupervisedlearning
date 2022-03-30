@@ -222,7 +222,7 @@ if __name__ == '__main__':
                         help='path to model checkpoint')
     parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00014-01.h5',
                         help='path to h5 patch file')
-    parser.add_argument('--max_patches', type=int, default=4, help='Number of patches to extract and segment')
+    parser.add_argument('--max_patches', type=int, default=6, help='Number of patches to extract and segment')
     parser.add_argument('--hipe_max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
                                                                       'more detailed but takes much longer.')
     parser.add_argument('--perturbation_type', default='mean', help='Perturbation substrate for use in '
@@ -247,7 +247,7 @@ if __name__ == '__main__':
                                                                                             'saliency detail at low '
                                                                                             'kernel sizes.')
     parser.add_argument('--flat_kernel_size', type=int, default=32, help='Kernel size for flat perturbation.')
-    parser.add_argument('--centre', default='37440,16704', help='Coordinate in form x,y of central patch')
+    parser.add_argument('--centre', default='28000,48500', help='Coordinate in form x,y of central patch')
     parser.add_argument('--save_path', default='', help='where to save saliency segmentation png file. If empty, '
                                                         'no local save is used. All images are logged to WandB in any '
                                                         'case.')
