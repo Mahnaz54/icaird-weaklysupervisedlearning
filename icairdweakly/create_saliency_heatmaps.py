@@ -312,7 +312,6 @@ if __name__ == '__main__':
             min_seg = torch.argmin(sal_maps, dim=0).int()
             sal_seg = torch.where((min_seg != max_seg), max_seg, torch.zeros_like(max_seg)+ NUM_CLASSES)
 
-            sal_maps = normalise(sal_maps)
             all_imgs.append(img)
             all_sal_segs.append(sal_seg)
             all_sal_maps.append(sal_maps)
