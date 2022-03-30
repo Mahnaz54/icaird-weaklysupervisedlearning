@@ -15,6 +15,7 @@ import wandb
 from scipy.ndimage.filters import gaussian_filter
 from PIL import Image
 
+
 def gkern(klen, nsig):
     inp = np.zeros((klen, klen))
     inp[klen // 2, klen // 2] = 1
@@ -34,9 +35,10 @@ def blur(x, klen=11, ksig=5):
 def normalise(x):
     return (x - x.min()) / max(x.max() - x.min(), 0.0001)
 
-def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None,
-                              perturbation_type='mean', threshold_mode='mid-range', return_info=False,
-                              diff_func=torch.relu, max_depth=-1, verbose=True):
+
+def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, perturbation_type='mean',
+                              threshold_mode='mid-range', return_info=False, diff_func=torch.relu, max_depth=-1,
+                              verbose=True):
     if verbose: print('\nBelieve the HiPe!')
     with torch.no_grad():
         dev = input.device
@@ -140,7 +142,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None,
                 if len(list(perturbed_outputs.shape)) == 1:
                     sal = perturbed_outputs.reshape(-1, 1, 1, 1) * torch.abs(masks - 1)
                 else:
-                    sal = perturbed_outputs.reshape(1,NUM_CLASSES,1,1) * torch.abs(masks - 1)
+                    sal = perturbed_outputs.reshape(1, NUM_CLASSES, 1, 1) * torch.abs(masks - 1)
 
                 saliency += sal
 
@@ -157,7 +159,7 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
     bn, channels, input_y_dim, input_x_dim = input.shape
     output = model(input)[0]
     if step_size == -1:
-        step_size = k_size//2
+        step_size = k_size // 2
     x_steps = range(0, input_x_dim - k_size + 1, step_size)
     y_steps = range(0, input_y_dim - k_size + 1, step_size)
     heatmap = torch.zeros((NUM_CLASSES, input_y_dim, input_x_dim))
@@ -172,13 +174,14 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
 
             if args.perturbation_type == 'mean':
                 occ_im[:, :, y: y + k_size, x: x + k_size] = torch.mean(input[:, :, y: y + k_size, x: x + k_size],
-                                        axis=(-1, -2), keepdims=True)
+                                                                        axis=(-1, -2), keepdims=True)
             if args.perturbation_type == 'fade':
                 occ_im[:, :, y: y + k_size, x: x + k_size] = 0.0
             if args.perturbation_type == 'blur':
                 occ_im[:, :, y: y + k_size, x: x + k_size] = blur_substrate[:, :, y: y + k_size, x: x + k_size]
 
-            heatmap[:, y:y+k_size, x:x+k_size] += torch.relu(output - model(occ_im)[0][0]).reshape(NUM_CLASSES,1,1)
+            heatmap[:, y:y + k_size, x:x + k_size] += torch.relu(output - model(occ_im)[0][0]).reshape(NUM_CLASSES, 1,
+                                                                                                       1)
             num_occs += 1
 
     return heatmap, num_occs
@@ -200,7 +203,7 @@ def sort_coords(coords, centre):
     x, y = int(centre[1]), int(centre[0])
     print('Sorting patches around {},{}'.format(x, y))
     coords = list(coords)
-    coords.sort(key=lambda p: np.sqrt((x - p[0])**2 + (y - p[1])**2))
+    coords.sort(key=lambda p: np.sqrt((x - p[0]) ** 2 + (y - p[1]) ** 2))
     return coords
 
 
@@ -216,7 +219,7 @@ if __name__ == '__main__':
     parser.add_argument('--hipe_max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
                                                                       'more detailed but takes much longer.')
     parser.add_argument('--perturbation_type', default='mean', help='Perturbation substrate for use in '
-                                                                         'hierarchical perturbation.')
+                                                                    'hierarchical perturbation.')
     parser.add_argument('--hipe_interp_mode', default='nearest', help='Interpolation mode for hierarchical '
                                                                       'perturbation')
     parser.add_argument('--downsample', type=int, default=1, help='Downsample for final image and saliency '
@@ -239,7 +242,8 @@ if __name__ == '__main__':
     parser.add_argument('--flat_kernel_size', type=int, default=32, help='Kernel size for flat perturbation.')
     parser.add_argument('--centre', default='37440,16704', help='Coordinate in form x,y of central patch')
     parser.add_argument('--save_path', default='', help='where to save saliency segmentation png file. If empty, '
-                                                        'no local save is used. All images are logged to WandB in any case.')
+                                                        'no local save is used. All images are logged to WandB in any '
+                                                        'case.')
 
     args = parser.parse_args()
 
@@ -252,10 +256,11 @@ if __name__ == '__main__':
 
     # load models
     model_args = argparse.Namespace(
-        **{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
+            **{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
     label_list = ['malignant', 'insufficient', 'other_benign']
     NUM_CLASSES = len(label_list)
-    class_labels = dict(zip(range(0, NUM_CLASSES), label_list))
+    # Have to do this manually to align WandB logging colours.
+    class_labels = {1: 'insufficient', 0: 'malignant', 2: 'other_benign'}
 
     inf_model = initiate_model(model_args, args.ckpt_path).to(device)
     inf_model.eval()
@@ -284,9 +289,8 @@ if __name__ == '__main__':
 
         max_patches = len(coords) if args.max_patches == -1 or args.max_patches > len(coords) else args.max_patches
         wandb.log({
-                      'Patch Level': patch_level, 'Patch Size': patch_size, 'Num Patches': max_patches,
-                      'Slide'      : slide_name
-                  })
+            'Patch Level': patch_level, 'Patch Size': patch_size, 'Num Patches': max_patches, 'Slide': slide_name
+            })
 
         coords = sort_coords(coords, centre=args.centre)[:max_patches]
         print('Generating patch-level saliency...')
@@ -301,16 +305,13 @@ if __name__ == '__main__':
 
             else:
                 sal_maps, _ = hierarchical_perturbation(model, img.unsqueeze(0),
-                                                              perturbation_type=args.perturbation_type,
-                                                              interp_mode=args.hipe_interp_mode, verbose=True,
-                                                              max_depth=args.hipe_max_depth)
-
-
-
+                                                        perturbation_type=args.perturbation_type,
+                                                        interp_mode=args.hipe_interp_mode, verbose=True,
+                                                        max_depth=args.hipe_max_depth)
 
             max_seg = torch.argmax(sal_maps, dim=0).int()
             min_seg = torch.argmin(sal_maps, dim=0).int()
-            sal_seg = torch.where((min_seg != max_seg), max_seg, torch.zeros_like(max_seg)+ NUM_CLASSES)
+            sal_seg = torch.where((min_seg != max_seg), max_seg, torch.zeros_like(max_seg) + NUM_CLASSES)
 
             sal_maps = normalise(sal_maps)
             all_imgs.append(img)
@@ -318,15 +319,18 @@ if __name__ == '__main__':
             all_sal_maps.append(sal_maps)
             if args.save_high_res_patches:
                 wandb.log({
-                    'Prediction'       : label_list[torch.argmax(Y_prob)],
-                    'Saliency'             : [wandb.Image(sal_maps[n], caption=label_list[n]) for n in range(
-                            NUM_CLASSES)],
-                    'Blended Saliency': wandb.Image(sal_maps),
-                    'Saliency Segmentation': wandb.Image(img, caption=str(logits), masks={
-                        "predictions": {
-                            "mask_data": sal_seg.numpy(), "class_labels": class_labels
-                            }
-                        })
+                    'Prediction'                                                     : label_list[torch.argmax(Y_prob)],
+                    'Saliency'                                                       : [
+                        wandb.Image(sal_maps[n], caption=label_list[n]) for n in range(NUM_CLASSES)],
+                    'Blended Saliency'                                               : wandb.Image(sal_maps),
+                    'Saliency Segmentation'                                          : wandb.Image(img,
+                                                                                                   caption=str(logits),
+                                                                                                   masks={
+                                                                                                       "predictions": {
+                                                                                                           "mask_data"   : sal_seg.numpy(),
+                                                                                                           "class_labels": class_labels
+                                                                                                           }
+                                                                                                       })
                     })
 
             y, x = coord
@@ -338,7 +342,8 @@ if __name__ == '__main__':
 
             all_coords.append((x, x1, y, y1))
 
-        im_x, im_y = max_x // args.downsample - min_x // args.downsample, max_y // args.downsample - min_y // args.downsample
+        im_x, im_y = max_x // args.downsample - min_x // args.downsample, max_y // args.downsample - min_y // \
+                     args.downsample
 
         print('Full image size: {}x{}'.format(im_x, im_y))
 
@@ -355,7 +360,9 @@ if __name__ == '__main__':
             sal_seg = all_sal_segs[i]
             sal_maps = all_sal_maps[i]
             x, x1, y, y1 = all_coords[i]
-            x, x1, y, y1 = x// args.downsample - min_x// args.downsample, x1// args.downsample - min_x// args.downsample, y// args.downsample - min_y// args.downsample, y1// args.downsample - min_y// args.downsample
+            x, x1, y, y1 = x // args.downsample - min_x // args.downsample, x1 // args.downsample - min_x // \
+                           args.downsample, y // args.downsample - min_y // args.downsample, y1 // args.downsample - \
+                           min_y // args.downsample
 
             full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
             full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
@@ -363,11 +370,11 @@ if __name__ == '__main__':
 
         print('Logging images...')
         wandb.log({
-            'Region coords': [min_x, max_x, min_y, max_y],
-            'Saliency'             : [wandb.Image(full_sal_map[n], caption=label_list[n]) for n in range(
-                            NUM_CLASSES)],
-            'Full Blended Saliency': wandb.Image(full_sal_map),
-            'Full Saliency Segmentation': wandb.Image(full_img, masks={
+            'Region coords'                                                            : [min_x, max_x, min_y, max_y],
+            'Saliency'                                                                 : [
+                wandb.Image(full_sal_map[n], caption=label_list[n]) for n in range(NUM_CLASSES)],
+            'Full Blended Saliency'                                                    : wandb.Image(full_sal_map),
+            'Full Saliency Segmentation'                                               : wandb.Image(full_img, masks={
                 "predictions": {
                     "mask_data": full_sal_seg.int().numpy(), "class_labels": class_labels
                     }
