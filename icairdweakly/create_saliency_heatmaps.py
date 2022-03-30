@@ -112,6 +112,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None,
                             mean = torch.mean(
                                     b_image[:, :, y1 * y_cell_dim:y2 * y_cell_dim, x1 * x_cell_dim:x2 * x_cell_dim],
                                     axis=(-1, -2), keepdims=True)
+                            print(mean)
 
                             b_image[:, :, y1 * y_cell_dim:y2 * y_cell_dim, x1 * x_cell_dim:x2 * x_cell_dim] = mean
                             b_list.append(b_image)
