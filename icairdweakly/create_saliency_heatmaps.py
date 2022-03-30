@@ -312,6 +312,7 @@ if __name__ == '__main__':
             min_seg = torch.argmin(sal_maps, dim=0).int()
             sal_seg = torch.where((min_seg != max_seg), max_seg, torch.zeros_like(max_seg)+ NUM_CLASSES)
 
+            sal_maps = normalise(sal_maps)
             all_imgs.append(img)
             all_sal_segs.append(sal_seg)
             all_sal_maps.append(sal_maps)
@@ -320,7 +321,7 @@ if __name__ == '__main__':
                     'Prediction'       : label_list[torch.argmax(Y_prob)],
                     'Saliency'             : [wandb.Image(sal_maps[n], caption=label_list[n]) for n in range(
                             NUM_CLASSES)],
-                    'Blended Saliency': wandb.Image(sal_maps.numpy()),
+                    'Blended Saliency': wandb.Image(sal_maps),
                     'Saliency Segmentation': wandb.Image(img, caption=str(logits), masks={
                         "predictions": {
                             "mask_data": sal_seg.numpy(), "class_labels": class_labels
@@ -365,7 +366,7 @@ if __name__ == '__main__':
             'Region coords': [min_x, max_x, min_y, max_y],
             'Saliency'             : [wandb.Image(full_sal_map[n], caption=label_list[n]) for n in range(
                             NUM_CLASSES)],
-            'Full Blended Saliency': wandb.Image(full_sal_map.numpy()),
+            'Full Blended Saliency': wandb.Image(full_sal_map),
             'Full Saliency Segmentation': wandb.Image(full_img, masks={
                 "predictions": {
                     "mask_data": full_sal_seg.int().numpy(), "class_labels": class_labels
