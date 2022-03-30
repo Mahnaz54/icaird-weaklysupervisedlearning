@@ -320,10 +320,10 @@ if __name__ == '__main__':
                     'Prediction'       : label_list[torch.argmax(Y_prob)],
                     'Saliency'             : [wandb.Image(sal_maps[n], caption=label_list[n]) for n in range(
                             NUM_CLASSES)],
-                    'Blended Saliency': wandb.Image(sal_maps),
+                    'Blended Saliency': wandb.Image(np.roll(sal_maps.numpy(), 1, axis=0)),
                     'Saliency Segmentation': wandb.Image(img, caption=str(logits), masks={
                         "predictions": {
-                            "mask_data": np.roll(sal_seg.numpy(), 1, axis=0), "class_labels": class_labels
+                            "mask_data": sal_seg.numpy(), "class_labels": class_labels
                             }
                         })
                     })
@@ -365,10 +365,10 @@ if __name__ == '__main__':
             'Region coords': [min_x, max_x, min_y, max_y],
             'Saliency'             : [wandb.Image(full_sal_map[n], caption=label_list[n]) for n in range(
                             NUM_CLASSES)],
-            'Blended Saliency': wandb.Image(full_sal_map),
+            'Blended Saliency': wandb.Image(np.roll(full_sal_map.numpy(), 1, axis=0)),
             'Full Saliency Segmentation': wandb.Image(full_img, masks={
                 "predictions": {
-                    "mask_data": np.roll(full_sal_seg.int().numpy(),1, axis=0), "class_labels": class_labels
+                    "mask_data": full_sal_seg.int().numpy(), "class_labels": class_labels
                     }
                 })
             })
