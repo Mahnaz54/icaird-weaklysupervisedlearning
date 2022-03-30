@@ -333,7 +333,7 @@ if __name__ == '__main__':
                                                                                                    caption=str(logits),
                                                                                                    masks={
                                                                                                        "predictions": {
-                                                                                                           "mask_data"   : sal_seg.numpy(),
+                                                                                                           "mask_data"   : adjust_label_order_for_wandb(sal_seg.numpy()),
                                                                                                            "class_labels": wandb_class_labels
                                                                                                            }
                                                                                                        })
@@ -382,7 +382,8 @@ if __name__ == '__main__':
             'Full Blended Saliency'                                                    : wandb.Image(full_sal_map),
             'Full Saliency Segmentation'                                               : wandb.Image(full_img, masks={
                 "predictions": {
-                    "mask_data": full_sal_seg.int().numpy(), "class_labels": wandb_class_labels
+                    "mask_data": adjust_label_order_for_wandb(full_sal_seg.int().numpy()), "class_labels":
+                        wandb_class_labels
                     }
                 })
             })
