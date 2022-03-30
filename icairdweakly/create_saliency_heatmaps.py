@@ -216,11 +216,11 @@ def sort_coords(coords, centre):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Saliency segmentation script')
-    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00033-01.isyntax',
+    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00014-01.isyntax',
                         help='path to isyntax slide')
     parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0_checkpoint.pt',
                         help='path to model checkpoint')
-    parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
+    parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00014-01.h5',
                         help='path to h5 patch file')
     parser.add_argument('--max_patches', type=int, default=4, help='Number of patches to extract and segment')
     parser.add_argument('--hipe_max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
