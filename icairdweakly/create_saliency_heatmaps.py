@@ -306,9 +306,10 @@ if __name__ == '__main__':
                                                               max_depth=args.hipe_max_depth)
 
 
+
+
             max_seg = torch.argmax(sal_maps, dim=0).int()
             min_seg = torch.argmin(sal_maps, dim=0).int()
-
             sal_seg = torch.where((min_seg != max_seg), max_seg, torch.zeros_like(max_seg)+ NUM_CLASSES)
 
             sal_maps = normalise(sal_maps)
@@ -320,6 +321,7 @@ if __name__ == '__main__':
                     'Prediction'       : label_list[torch.argmax(Y_prob)],
                     'Saliency'             : [wandb.Image(sal_maps[n], caption=label_list[n]) for n in range(
                             NUM_CLASSES)],
+                    'Blended Saliency': wandb.Image(sal_maps),
                     'Saliency Segmentation': wandb.Image(img, caption=str(logits), masks={
                         "predictions": {
                             "mask_data": sal_seg.numpy(), "class_labels": class_labels
