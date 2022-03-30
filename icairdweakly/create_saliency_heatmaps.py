@@ -31,8 +31,12 @@ def blur(x, klen=11, ksig=5):
     return F.conv2d(x, kern, padding=klen // 2)
 
 
+def normalise(x):
+    return (x - x.min()) / max(x.max() - x.min(), 0.0001)
+
 def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None,
-                              perturbation_type='mean', threshold_mode='mid-range', return_info=False, max_depth=-1, verbose=True):
+                              perturbation_type='mean', threshold_mode='mid-range', return_info=False,
+                              diff_func=torch.relu, max_depth=-1, verbose=True):
     if verbose: print('\nBelieve the HiPe!')
     with torch.no_grad():
         dev = input.device
@@ -66,7 +70,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None,
             else:
                 threshold = torch.min(saliency) + ((torch.max(saliency) - torch.min(saliency)) / 2)
 
-            thresholds_d_list.append(threshold.item())
+            thresholds_d_list.append(diff_func(threshold).item())
 
             y_ixs = range(-1, num_cells)
             x_ixs = range(-1, num_cells)
@@ -88,7 +92,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None,
                     local_saliency = F.interpolate(mask, (input_y_dim, input_x_dim), mode=interp_mode) * saliency
 
                     if depth > 1:
-                        local_saliency = torch.max(local_saliency)
+                        local_saliency = torch.max(diff_func(local_saliency))
                     else:
                         local_saliency = 0
 
@@ -129,9 +133,9 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None,
                 masks = F.interpolate(masks, (input_y_dim, input_x_dim), mode=interp_mode)
 
                 if perturbation_type == 'fade':
-                    perturbed_outputs = output - model(input * masks)[0][0]
+                    perturbed_outputs = diff_func(output - model(input * masks)[0][0])
                 else:
-                    perturbed_outputs = output - model(b_imgs)[0][0]
+                    perturbed_outputs = diff_func(output - model(b_imgs)[0][0])
 
                 if len(list(perturbed_outputs.shape)) == 1:
                     sal = perturbed_outputs.reshape(-1, 1, 1, 1) * torch.abs(masks - 1)
@@ -174,7 +178,7 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
             if args.perturbation_type == 'blur':
                 occ_im[:, :, y: y + k_size, x: x + k_size] = blur_substrate[:, :, y: y + k_size, x: x + k_size]
 
-            heatmap[:, y:y+k_size, x:x+k_size] += (output - model(occ_im)[0][0]).reshape(NUM_CLASSES,1,1)
+            heatmap[:, y:y+k_size, x:x+k_size] += torch.relu(output - model(occ_im)[0][0]).reshape(NUM_CLASSES,1,1)
             num_occs += 1
 
     return heatmap, num_occs
@@ -301,7 +305,9 @@ if __name__ == '__main__':
                                                               interp_mode=args.hipe_interp_mode, verbose=True,
                                                               max_depth=args.hipe_max_depth)
 
+
             sal_seg = torch.argmax(sal_maps, dim=0).int()
+            sal_maps = normalise(sal_maps)
             all_imgs.append(img)
             all_sal_segs.append(sal_seg)
             all_sal_maps.append(sal_maps)
