@@ -323,7 +323,7 @@ if __name__ == '__main__':
                     'Blended Saliency': wandb.Image(sal_maps),
                     'Saliency Segmentation': wandb.Image(img, caption=str(logits), masks={
                         "predictions": {
-                            "mask_data": sal_seg.numpy(), "class_labels": class_labels
+                            "mask_data": np.roll(sal_seg.numpy(), 1, axis=0), "class_labels": class_labels
                             }
                         })
                     })
@@ -368,7 +368,7 @@ if __name__ == '__main__':
             'Blended Saliency': wandb.Image(full_sal_map),
             'Full Saliency Segmentation': wandb.Image(full_img, masks={
                 "predictions": {
-                    "mask_data": full_sal_seg.int().numpy(), "class_labels": class_labels
+                    "mask_data": np.roll(full_sal_seg.int().numpy(),1, axis=0), "class_labels": class_labels
                     }
                 })
             })
