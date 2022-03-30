@@ -315,6 +315,11 @@ if __name__ == '__main__':
             all_imgs.append(img)
             all_sal_segs.append(sal_seg)
             all_sal_maps.append(sal_maps)
+
+
+            print(sal_maps.shape)
+            print(np.roll(sal_maps.numpy(), 1, axis=0).shape)
+
             if args.save_high_res_patches:
                 wandb.log({
                     'Prediction'       : label_list[torch.argmax(Y_prob)],
