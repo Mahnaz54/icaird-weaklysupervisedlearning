@@ -36,6 +36,13 @@ def normalise(x):
     return (x - x.min()) / max(x.max() - x.min(), 0.0001)
 
 
+def adjust_label_order_for_wandb(x):
+    x = x.copy()
+    x += 1
+    x[x == NUM_CLASSES] = 0
+    return x
+
+
 def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, perturbation_type='mean',
                               threshold_mode='mid-range', return_info=False, diff_func=torch.relu, max_depth=-1,
                               verbose=True):
@@ -259,8 +266,7 @@ if __name__ == '__main__':
             **{'model_type': 'clam_sb', 'model_size': 'small', 'drop_out': 'true', 'n_classes': 3})
     label_list = ['malignant', 'insufficient', 'other_benign']
     NUM_CLASSES = len(label_list)
-    # Have to do this manually to align WandB logging colours.
-    class_labels = {1: 'insufficient', 0: 'malignant', 2: 'other_benign'}
+    wandb_class_labels = {0:'other_benign', 1:'malignant', 2:'insufficient'}
 
     inf_model = initiate_model(model_args, args.ckpt_path).to(device)
     inf_model.eval()
@@ -328,7 +334,7 @@ if __name__ == '__main__':
                                                                                                    masks={
                                                                                                        "predictions": {
                                                                                                            "mask_data"   : sal_seg.numpy(),
-                                                                                                           "class_labels": class_labels
+                                                                                                           "class_labels": wandb_class_labels
                                                                                                            }
                                                                                                        })
                     })
@@ -376,7 +382,7 @@ if __name__ == '__main__':
             'Full Blended Saliency'                                                    : wandb.Image(full_sal_map),
             'Full Saliency Segmentation'                                               : wandb.Image(full_img, masks={
                 "predictions": {
-                    "mask_data": full_sal_seg.int().numpy(), "class_labels": class_labels
+                    "mask_data": full_sal_seg.int().numpy(), "class_labels": wandb_class_labels
                     }
                 })
             })
