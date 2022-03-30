@@ -366,6 +366,7 @@ if __name__ == '__main__':
             'Region coords': [min_x, max_x, min_y, max_y],
             'Saliency'             : [wandb.Image(full_sal_map[n], caption=label_list[n]) for n in range(
                             NUM_CLASSES)],
+            'Blended Saliency': wandb.Image(full_sal_map),
             'Full Saliency Segmentation': wandb.Image(full_img, masks={
                 "predictions": {
                     "mask_data": full_sal_seg.int().numpy(), "class_labels": class_labels
