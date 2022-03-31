@@ -255,7 +255,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print(args)
-    args_code = '-'.join([str(v) for v in vars(args).values()]).replace('/', '_').replace('.',',')
+    args_dict = args.vars()
+    del args_dict['max_patches']
+    args_code = '-'.join([str(v) for v in args_dict.values()]).replace('/', '_').replace('.',',')
     print(args_code)
 
     proj = "icaird_sal_seg"
