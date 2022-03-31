@@ -289,7 +289,6 @@ if __name__ == '__main__':
 
         pdim = patch_size // args.downsample
         all_imgs = []
-        all_sal_segs = []
         all_sal_maps = []
         all_coords = []
 
@@ -315,14 +314,9 @@ if __name__ == '__main__':
                                                         interp_mode=args.hipe_interp_mode, verbose=True,
                                                         max_depth=args.hipe_max_depth)
 
-            max_seg = torch.argmax(sal_maps, dim=0).int()
-            min_seg = torch.argmin(sal_maps, dim=0).int()
-            sal_seg = torch.where((min_seg != max_seg), max_seg, torch.zeros_like(max_seg) + NUM_CLASSES)
 
-            sal_maps = normalise(sal_maps)
-            all_imgs.append(img)
-            all_sal_segs.append(sal_seg)
-            all_sal_maps.append(sal_maps)
+            all_imgs.append(F.interpolate(img.unsqueeze(0), (pdim, pdim))[0])
+            all_sal_maps.append(F.interpolate(sal_maps.unsqueeze(0), (pdim, pdim))[0])
             if args.save_high_res_patches:
                 wandb.log({
                     'Prediction'                                                     : label_list[torch.argmax(Y_prob)],
@@ -354,7 +348,6 @@ if __name__ == '__main__':
         print('Full image size: {}x{}'.format(im_x, im_y))
 
         full_img = torch.ones((3, im_x, im_y))
-        full_sal_seg = torch.zeros((im_x, im_y)) + NUM_CLASSES
         full_sal_map = torch.zeros((NUM_CLASSES, im_x, im_y))
 
         print('Stitching...')
@@ -363,16 +356,19 @@ if __name__ == '__main__':
         for i in range(len(all_imgs)):
             print('{}/{}'.format(i + 1, len(all_imgs)))
             img = all_imgs[i]
-            sal_seg = all_sal_segs[i]
             sal_maps = all_sal_maps[i]
             x, x1, y, y1 = all_coords[i]
             x, x1, y, y1 = x // args.downsample - min_x // args.downsample, x1 // args.downsample - min_x // \
                            args.downsample, y // args.downsample - min_y // args.downsample, y1 // args.downsample - \
                            min_y // args.downsample
 
-            full_img[:, x: x1, y:y1] = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
-            full_sal_seg[x:x1, y:y1] = F.interpolate(sal_seg.float().unsqueeze(0).unsqueeze(0), (pdim, pdim))[0][0]
-            full_sal_map[:, x:x1, y:y1] = F.interpolate(sal_maps.unsqueeze(0), (pdim, pdim))[0]
+            full_img[:, x: x1, y:y1] = img
+            full_sal_map[:, x:x1, y:y1] = sal_maps
+
+        max_seg = torch.argmax(full_sal_map, dim=0).int()
+        min_seg = torch.argmin(full_sal_map, dim=0).int()
+        full_sal_seg = torch.where((min_seg != max_seg), max_seg, torch.zeros_like(max_seg) + NUM_CLASSES)
+        full_sal_map = normalise(full_sal_map)
 
         print('Logging images...')
         wandb.log({
