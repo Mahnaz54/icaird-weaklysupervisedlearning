@@ -279,7 +279,7 @@ if __name__ == '__main__':
     transforms = default_transforms()
 
     #create sal_seg dir
-    if not os.path.exits('sal_seg'): os.mkdir('sal_seg')
+    if not os.path.exists('sal_seg'): os.mkdir('sal_seg')
 
     # load patch data
     with h5py.File(args.patch_path, 'r') as f:
