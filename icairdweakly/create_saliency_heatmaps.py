@@ -255,7 +255,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print(args)
-    args_code = '_'.join([str(v) for v in dict(args).values()])
+    args_code = '_'.join([str(v) for v in vars(args).values()])
     print(args_code)
 
     proj = "icaird_sal_seg"
