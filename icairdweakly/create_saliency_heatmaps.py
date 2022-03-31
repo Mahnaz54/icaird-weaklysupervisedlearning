@@ -281,6 +281,9 @@ if __name__ == '__main__':
     #create sal_seg dir
     if not os.path.exists('sal_seg'): os.mkdir('sal_seg')
 
+    #create run dir
+    if not os.path.exists('sal_seg/{}'.format(args)): os.mkdir('sal_seg/{}'.format(args))
+
     # load patch data
     with h5py.File(args.patch_path, 'r') as f:
         coords = f['coords']
@@ -301,7 +304,7 @@ if __name__ == '__main__':
         coords = sort_coords(coords, centre=args.centre)[:max_patches]
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
-            if not os.path.exists('sal_seg/img_{}_{}'.format(coord, args.downsample)):
+            if not os.path.exists('sal_seg/{}/sal_seg_{}'.format(args, coord)):
                 img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
                 logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
                 logits = np.round(logits.detach().numpy(), 2)[0]
@@ -318,10 +321,8 @@ if __name__ == '__main__':
 
 
 
-                torch.save(F.interpolate(img.unsqueeze(0), (pdim, pdim))[0], 'sal_seg/img_{}_{}'.format(coord,
-                                                                                                  args.downsample))
-                torch.save(F.interpolate(sal_maps.unsqueeze(0), (pdim, pdim))[0], 'sal_seg/sal_{}_{}'.format(coord,
-                                                                                                       args.downsample))
+                torch.save(F.interpolate(img.unsqueeze(0), (pdim, pdim))[0], 'sal_seg/{}/img_{}'.format(args, coord))
+                torch.save(F.interpolate(sal_maps.unsqueeze(0), (pdim, pdim))[0], 'sal_seg/{}/sal_seg_{}'.format(args, coord))
                 if args.save_high_res_patches:
                     max_seg = torch.argmax(sal_maps, dim=0).int()
                     min_seg = torch.argmin(sal_maps, dim=0).int()
@@ -362,8 +363,8 @@ if __name__ == '__main__':
 
         for i, coord in enumerate(coords):
             print('{}/{}'.format(i + 1, max_patches))
-            img = torch.load('sal_seg/img_{}_{}'.format(coord, args.downsample))
-            sal_maps = torch.load('sal_seg/sal_{}_{}'.format(coord, args.downsample))
+            img = torch.load('sal_seg/{}/img_{}'.format(args, coord))
+            sal_maps = torch.load('sal_seg/{}/sal_seg_{}'.format(args, coord))
             y,x = coord
             x = x - min_x // args.downsample
             y = y - min_y // args.downsample
