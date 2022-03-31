@@ -306,7 +306,9 @@ if __name__ == '__main__':
         coords = sort_coords(coords, centre=args.centre)[:max_patches]
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
-            if not os.path.exists('sal_seg/{}/sal_seg_{}'.format(args_code, coord)):
+            if os.path.exists('sal_seg/{}/sal_seg_{}'.format(args_code, coord)):
+                print('Found existing saliency segmentation patch for coord {}'.format(coord))
+            else:
                 img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
                 logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
                 logits = np.round(logits.detach().numpy(), 2)[0]
