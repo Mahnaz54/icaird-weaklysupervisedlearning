@@ -394,6 +394,7 @@ if __name__ == '__main__':
 
         print('Logging images...')
         wandb.log({
+            'Image dimensions': [im_x, im_y],
             'Region coords'                                                            : [min_x, max_x, min_y, max_y],
             'Saliency'                                                                 : [
                 wandb.Image(full_sal_map[n], caption=label_list[n]) for n in range(NUM_CLASSES)],
