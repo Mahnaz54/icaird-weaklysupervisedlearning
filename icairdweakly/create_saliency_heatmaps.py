@@ -280,8 +280,9 @@ if __name__ == '__main__':
     transforms = default_transforms()
     slide_name = args.slide_path.split('/')[-1].split('.')[0]
 
-    args_code = '-'.join([slide_name, args.hipe_max_depth, args.perturbation_type, args.hipe_interp_mode,
-                          args.downsample, args.use_flat_perturbation, args.flat_kernel_size])
+    args_code = '-'.join([str(s) for s in [slide_name, args.hipe_max_depth, args.perturbation_type,
+                                          args.hipe_interp_mode,
+                          args.downsample, args.use_flat_perturbation, args.flat_kernel_size]])
     print(args_code)
 
     #create sal_seg dir
