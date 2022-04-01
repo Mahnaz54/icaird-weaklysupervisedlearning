@@ -13,7 +13,6 @@ from datasets.wsi_dataset import default_transforms
 import torch.nn.functional as F
 import wandb
 from scipy.ndimage.filters import gaussian_filter
-from scipy.spatial import minkowski_distance
 from PIL import Image
 import os
 
@@ -207,12 +206,12 @@ class ModelUmbrella(nn.Module):
 
 
 def sort_coords(coords, centre):
-    # sort coordinates by minkowsky distance from centre coord
+    # sort coordinates by chebyshev distance from centre coord
     centre = centre.split(',')
     x, y = int(centre[1]), int(centre[0])
     print('Sorting patches around {},{}'.format(x, y))
     coords = list(coords)
-    coords.sort(key=lambda p: minkowski_distance([x,y], [p[1], p[0]], 99999))
+    coords.sort(key=lambda p: max(abs(x - p[1]), abs(y - p[0])))
     return coords
 
 
