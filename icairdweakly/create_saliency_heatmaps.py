@@ -256,11 +256,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print(args)
-    args_dict = vars(args).copy()
-    args_dict['max_patches'] = ''
-    args_dict['centre'] = ''
-    args_code = '-'.join([str(v) for v in args_dict.values()]).replace('/', '_').replace('.',',')
-    print(args_code)
 
     proj = "icaird_sal_seg"
     run = wandb.init(project=proj, entity="jessicamarycooper", config=args)
@@ -283,6 +278,11 @@ if __name__ == '__main__':
     # load WSI
     wsi = WholeSlideImage(args.slide_path)
     transforms = default_transforms()
+    slide_name = args.slide_path.split('/')[-1].split('.')[0]
+
+    args_code = '-'.join([slide_name, args.hipe_max_depth, args.perturbation_type, args.hipe_interp_mode,
+                          args.downsample, args.use_flat_perturbation, args.flat_kernel_size])
+    print(args_code)
 
     #create sal_seg dir
     if not os.path.exists('sal_seg'): os.mkdir('sal_seg')
@@ -295,7 +295,7 @@ if __name__ == '__main__':
         coords = f['coords']
         patch_level = coords.attrs['patch_level']
         patch_size = coords.attrs['patch_size']
-        slide_name = args.slide_path.split('/')[-1].split('.')[0]
+
         _, ydim, _, xdim = wsi.level_dimensions[patch_level]
         min_x, min_y, max_x, max_y = xdim, ydim, 0, 0
 
