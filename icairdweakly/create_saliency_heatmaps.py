@@ -166,7 +166,7 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
     bn, channels, input_y_dim, input_x_dim = input.shape
     output = model(input)[0]
     if step_size == -1:
-        step_size = k_size // 2
+        step_size = k_size
     x_steps = range(0, input_x_dim - k_size + 1, step_size)
     y_steps = range(0, input_y_dim - k_size + 1, step_size)
     heatmap = torch.zeros((NUM_CLASSES, input_y_dim, input_x_dim))
