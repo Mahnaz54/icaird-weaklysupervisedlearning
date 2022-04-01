@@ -255,7 +255,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print(args)
-    args_dict = vars(args.copy())
+    args_dict = vars(args).copy()
     args_dict['max_patches'] = -1
     args_code = '-'.join([str(v) for v in args_dict.values()]).replace('/', '_').replace('.',',')
     print(args_code)
