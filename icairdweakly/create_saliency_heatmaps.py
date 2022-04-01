@@ -379,6 +379,7 @@ if __name__ == '__main__':
             x = x - min_x // args.downsample
             y = y - min_y // args.downsample
             print(img.shape, sal_maps.shape)
+            print(pdim)
 
             if img.shape[1] != pdim:
                 img = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
