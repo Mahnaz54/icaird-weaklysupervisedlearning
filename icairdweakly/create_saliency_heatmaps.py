@@ -257,6 +257,7 @@ if __name__ == '__main__':
     print(args)
     args_dict = vars(args).copy()
     args_dict['max_patches'] = -1
+    args_dict['downsample'] = 1
     args_code = '-'.join([str(v) for v in args_dict.values()]).replace('/', '_').replace('.',',')
     print(args_code)
 
@@ -377,6 +378,9 @@ if __name__ == '__main__':
             y,x = coord
             x = x - min_x // args.downsample
             y = y - min_y // args.downsample
+
+            print(img.shape, sal_maps.shape)
+            exit()
 
             full_img[:, x: x+pdim, y:y+pdim] = img
             full_sal_map[:, x:x+pdim, y:y+pdim] = sal_maps
