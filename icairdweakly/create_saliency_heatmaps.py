@@ -376,8 +376,8 @@ if __name__ == '__main__':
             img = torch.load('sal_seg/{}/img_{}'.format(args_code, coord))
             sal_maps = torch.load('sal_seg/{}/sal_seg_{}'.format(args_code, coord))
             y,x = coord
-            x = x - min_x // args.downsample
-            y = y - min_y // args.downsample
+            x = (x - min_x) // args.downsample
+            y = (y - min_y) // args.downsample
             print(img.shape, sal_maps.shape)
             print(pdim, x, x+pdim, y, y+pdim)
 
