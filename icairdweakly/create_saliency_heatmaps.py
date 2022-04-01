@@ -212,7 +212,7 @@ def sort_coords(coords, centre):
     x, y = int(centre[1]), int(centre[0])
     print('Sorting patches around {},{}'.format(x, y))
     coords = list(coords)
-    coords.sort(key=lambda p: minkowski_distance([x,y], [p[1], p[0]], args.downsample))
+    coords.sort(key=lambda p: minkowski_distance([x,y], [p[1], p[0]], 8))
     return coords
 
 
