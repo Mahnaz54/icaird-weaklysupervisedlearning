@@ -222,17 +222,17 @@ if __name__ == '__main__':
                         help='path to model checkpoint')
     parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
                         help='path to h5 patch file')
-    parser.add_argument('--max_patches', type=int, default=6, help='Number of patches to extract and segment')
+    parser.add_argument('--max_patches', type=int, default=25, help='Number of patches to extract and segment')
     parser.add_argument('--hipe_max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
                                                                       'more detailed but takes much longer.')
     parser.add_argument('--perturbation_type', default='mean', help='Perturbation substrate for use in '
                                                                     'hierarchical perturbation.')
     parser.add_argument('--hipe_interp_mode', default='nearest', help='Interpolation mode for hierarchical '
                                                                       'perturbation')
-    parser.add_argument('--downsample', type=int, default=1, help='Downsample for final image and saliency '
+    parser.add_argument('--downsample', type=int, default=8, help='Downsample for final image and saliency '
                                                                   'segmentation stitching. 1 = no downsampling. If '
                                                                   'all patches are used, low values will probably '
-                                                                  'cause OOM errors.')
+                                                                  'cause OOM errors when the final image is stitched.')
     parser.add_argument('--save_high_res_patches', default=False, action='store_true', help='Whether to save high '
                                                                                             'resolution patches and '
                                                                                             'saliency segmentations '
@@ -311,7 +311,7 @@ if __name__ == '__main__':
             print('{}/{} Patch coords: {}'.format(i + 1, max_patches, coord))
 
             if os.path.exists('sal_seg/{}/sal_seg_{}'.format(args_code, coord)):
-                print('Found existing saliency segmentation patch for coord {}'.format(coord))
+                print('Found existing saliency segmentation patch for coord {}, skipping...'.format(coord))
             else:
                 img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(device)
                 logits, Y_prob, Y_hat, A_raw, results_dict = model(torch.Tensor(img.unsqueeze(0)))
@@ -381,6 +381,7 @@ if __name__ == '__main__':
             full_img[:, x: x+pdim, y:y+pdim] = img
             full_sal_map[:, x:x+pdim, y:y+pdim] = sal_maps
 
+        print('Calculating saliency segmentation...')
         max_seg = torch.argmax(full_sal_map, dim=0).int()
         min_seg = torch.argmin(full_sal_map, dim=0).int()
         full_sal_seg = torch.where((min_seg != max_seg), max_seg, torch.zeros_like(max_seg) + NUM_CLASSES)
