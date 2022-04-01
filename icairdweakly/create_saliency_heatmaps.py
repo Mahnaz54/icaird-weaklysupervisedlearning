@@ -378,13 +378,10 @@ if __name__ == '__main__':
             y,x = coord
             x = (x - min_x) // args.downsample
             y = (y - min_y) // args.downsample
-            print(img.shape, sal_maps.shape)
-            print(pdim, x, x+pdim, y, y+pdim)
 
             if img.shape[1] != pdim:
                 img = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
                 sal_maps = F.interpolate(sal_maps.unsqueeze(0), (pdim, pdim))[0]
-                print(img.shape, sal_maps.shape)
 
             full_img[:, x: x+pdim, y:y+pdim] = img
             full_sal_map[:, x:x+pdim, y:y+pdim] = sal_maps
