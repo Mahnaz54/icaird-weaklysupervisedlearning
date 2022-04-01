@@ -256,7 +256,7 @@ if __name__ == '__main__':
 
     print(args)
     args_dict = args.vars()
-    args_dict['max_patches'] = 0
+    args_dict['max_patches'] = -1
     args_code = '-'.join([str(v) for v in args_dict.values()]).replace('/', '_').replace('.',',')
     print(args_code)
     exit()
