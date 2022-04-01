@@ -210,7 +210,7 @@ def sort_coords(coords, centre):
     x, y = int(centre[1]), int(centre[0])
     print('Sorting patches around {},{}'.format(x, y))
     coords = list(coords)
-    coords.sort(key=lambda p: np.abs(x - p[1])+ np.abs(y - p[0]))
+    coords.sort(key=lambda p: np.sqrt((x - p[1]) ** 2 + (y - p[0]) ** 2))
     return coords
 
 
