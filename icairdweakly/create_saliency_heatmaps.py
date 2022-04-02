@@ -226,7 +226,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_patches', type=int, default=100, help='Number of patches to extract and segment')
     parser.add_argument('--hipe_max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
                                                                       'more detailed but takes much longer.')
-    parser.add_argument('--perturbation_type', default='mean', help='Perturbation substrate for use in '
+    parser.add_argument('--perturbation_type', default='fade', help='Perturbation substrate for use in '
                                                                     'hierarchical perturbation.')
     parser.add_argument('--hipe_interp_mode', default='nearest', help='Interpolation mode for hierarchical '
                                                                       'perturbation')
