@@ -192,7 +192,7 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
 
             diff = torch.relu(output - model(occ_im)[0][0]).reshape(NUM_CLASSES, 1, 1)
             print(diff.shape)
-            heatmap[:, hy, hx] += diff
+            heatmap[:, hy:hy+1, hx:hx+1] += diff
             num_occs += 1
             hy += 1
         hx += 1
