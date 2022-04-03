@@ -171,6 +171,7 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
     x_steps = range(0, input_x_dim - k_size + 1, step_size)
     y_steps = range(0, input_y_dim - k_size + 1, step_size)
     heatmap = torch.zeros((NUM_CLASSES, len(y_steps), len(x_steps)))
+    print(heatmap.shape)
     num_occs = 0
 
     blur_substrate = blur(input)
@@ -189,7 +190,9 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
             if args.perturbation_type == 'blur':
                 occ_im[:, :, y: y + k_size, x: x + k_size] = blur_substrate[:, :, y: y + k_size, x: x + k_size]
 
-            heatmap[:, hy, hx] += torch.relu(output - model(occ_im)[0][0]).reshape(NUM_CLASSES, 1, 1)
+            diff = torch.relu(output - model(occ_im)[0][0]).reshape(NUM_CLASSES, 1, 1)
+            print(diff)
+            heatmap[:, hy, hx] += diff
             num_occs += 1
             hy += 1
         hx += 1
