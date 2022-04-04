@@ -263,7 +263,7 @@ if __name__ == '__main__':
     parser.add_argument('--save_path', default='', help='where to save saliency segmentation png file. If empty, '
                                                         'no local save is used. All images are logged to WandB in any '
                                                         'case.')
-    parser.add_argument('--use_existing', default=True, action='store_false', help='Use existing saliency '
+    parser.add_argument('--overwrite', default=False, action='store_true', help='Overwrite existing saliency '
                                                                                 'segmentation patches, if they exist')
 
     args = parser.parse_args()
@@ -326,7 +326,7 @@ if __name__ == '__main__':
         for i, coord in enumerate(coords):
             print('{}/{} Patch coords: {}'.format(i + 1, max_patches, coord))
 
-            if os.path.exists('sal_seg/{}/sal_seg_{}'.format(args_code, coord) and args.use_existing):
+            if os.path.exists('sal_seg/{}/sal_seg_{}'.format(args_code, coord) and not args.overwrite):
                 print('Found existing saliency segmentation patch for coord {}, skipping...'.format(coord))
             else:
                 img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(
