@@ -149,7 +149,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
                     perturbed_outputs = diff_func(output - model(b_imgs)[0][0])
 
                 if threshold_mode == 'var':
-                    sal = torch.var(perturbed_outputs, dim=1)
+                    sal = torch.var(perturbed_outputs, dim=(-1,-2))
                     print(sal.shape)
                     sal = sal * torch.abs(masks - 1)
 
