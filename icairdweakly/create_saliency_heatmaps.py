@@ -79,8 +79,8 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
                 #threshold = torch.mean(saliency)
                 threshold = torch.mean(saliency, axis=(-1, -2))
             else:
-                threshold = torch.min(saliency, axis=(-1, -2)) + ((torch.max(saliency, axis=(-1, -2)) - torch.min(
-                        saliency, axis=(-1, -2))) / 2)
+                threshold = torch.min(saliency, dim=(-1, -2)) + ((torch.max(saliency, dim=(-1, -2)) - torch.min(
+                        saliency, dim=(-1, -2))) / 2)
 
             print(threshold)
             thresholds_d_list.append(diff_func(threshold).item())
