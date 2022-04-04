@@ -76,10 +76,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
             num_cells *= 2
             depth += 1
             if threshold_mode == 'var':
-                threshold = torch.var(saliency, dim=(-1,-2))
-                print(threshold)
-                threshold = -torch.var(threshold)
-                print(threshold)
+                threshold = -torch.std(torch.amax(saliency, dim=(-1,-2)))
             elif threshold_mode == 'mean':
                 threshold = torch.mean(saliency)
             else:
@@ -109,11 +106,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
 
                     if depth > 1:
                         if threshold_mode == 'var':
-                            local_saliency = torch.var(local_saliency, dim=(-1,-2))
-                            print(local_saliency)
-                            local_saliency = -torch.var(local_saliency)
-                            print(local_saliency)
-
+                            local_saliency = -torch.std(torch.amax(local_saliency, dim=(-1,-2)))
                         else:
                             local_saliency = torch.max(diff_func(local_saliency))
                     else:
