@@ -75,9 +75,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
             b_list = []
             num_cells *= 2
             depth += 1
-            if threshold_mode == 'var':
-                threshold = -torch.var(saliency)
-            elif threshold_mode == 'mean':
+            if threshold_mode == 'mean':
                 threshold = torch.mean(saliency)
             else:
                 threshold = torch.min(saliency) + ((torch.max(saliency) - torch.min(saliency)) / 2)
@@ -105,10 +103,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
                     local_saliency = F.interpolate(mask, (input_y_dim, input_x_dim), mode=interp_mode) * saliency
 
                     if depth > 1:
-                        if threshold_mode == 'var':
-                            local_saliency = -torch.var(local_saliency)
-                        else:
-                            local_saliency = torch.max(diff_func(local_saliency))
+                        local_saliency = torch.max(diff_func(local_saliency))
                     else:
                         local_saliency = 0
 
@@ -153,7 +148,12 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
                 else:
                     perturbed_outputs = diff_func(output - model(b_imgs)[0][0])
 
-                if len(list(perturbed_outputs.shape)) == 1:
+                if threshold_mode == 'var':
+                    sal = torch.var(perturbed_outputs, dim=1)
+                    print(sal.shape)
+                    sal = sal * torch.abs(masks - 1)
+
+                elif len(list(perturbed_outputs.shape)) == 1:
                     sal = perturbed_outputs.reshape(-1, 1, 1, 1) * torch.abs(masks - 1)
                 else:
                     sal = perturbed_outputs.reshape(1, NUM_CLASSES, 1, 1) * torch.abs(masks - 1)
@@ -196,13 +196,12 @@ def flat_perturbation(model, input, k_size=1, step_size=-1):
                 occ_im[:, :, y: y + k_size, x: x + k_size] = blur_substrate[:, :, y: y + k_size, x: x + k_size]
 
             diff = torch.relu(output - model(occ_im)[0][0]).reshape(NUM_CLASSES, 1, 1)
-            heatmap[:, hy:hy+1, hx:hx+1] += diff
+            heatmap[:, hy:hy + 1, hx:hx + 1] += diff
             num_occs += 1
             hy += 1
         hx += 1
 
     return heatmap, num_occs
-
 
 
 class ModelUmbrella(nn.Module):
@@ -340,7 +339,7 @@ if __name__ == '__main__':
 
         coords = sort_coords(coords, centre=args.centre)[:max_patches]
         if args.overlap:
-            coords = overlap_coords(coords, patch_size//2)
+            coords = overlap_coords(coords, patch_size // 2)
             max_patches = len(coords)
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
@@ -418,8 +417,8 @@ if __name__ == '__main__':
             full_sal_map[:, x:x + pdim, y:y + pdim] += sal_maps
 
         if args.overlap:
-            full_img = full_img[:, pdim//2:-pdim//2,pdim//2:-pdim//2]
-            full_sal_map = full_sal_map[:, pdim//2:-pdim//2,pdim//2:-pdim//2]
+            full_img = full_img[:, pdim // 2:-pdim // 2, pdim // 2:-pdim // 2]
+            full_sal_map = full_sal_map[:, pdim // 2:-pdim // 2, pdim // 2:-pdim // 2]
         print('Calculating saliency segmentation...')
         max_seg = torch.argmax(full_sal_map, dim=0).int()
         min_seg = torch.argmin(full_sal_map, dim=0).int()
@@ -428,12 +427,10 @@ if __name__ == '__main__':
 
         print('Logging images...')
         wandb.log({
-            'Image dimensions'                                                         : [im_x, im_y],
-            'Region coords'                                                            : [min_x, max_x, min_y, max_y],
-            'Saliency'                                                                 : [
-                wandb.Image(full_sal_map[n], caption=label_list[n]) for n in range(NUM_CLASSES)],
-            'Full Blended Saliency'                                                    : wandb.Image(full_sal_map),
-            'Full Saliency Segmentation'                                               : wandb.Image(full_img, masks={
+            'Image dimensions': [im_x, im_y], 'Region coords': [min_x, max_x, min_y, max_y],
+            'Saliency': [wandb.Image(full_sal_map[n], caption=label_list[n]) for n in range(NUM_CLASSES)],
+            'Full Blended Saliency': wandb.Image(full_sal_map),
+            'Full Saliency Segmentation': wandb.Image(full_img, masks={
                 "predictions": {
                     "mask_data"   : adjust_label_order_for_wandb(full_sal_seg.int().numpy()),
                     "class_labels": wandb_class_labels
