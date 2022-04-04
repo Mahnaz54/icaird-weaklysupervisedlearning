@@ -231,7 +231,9 @@ def overlap_coords(coords, overlap):
     olc = []
     for c in coords:
         olc.append([c[0] + overlap, c[1] + overlap])
-    return coords.extend(olc)
+    coords.extend(olc)
+
+    return coords
 
 
 if __name__ == '__main__':
