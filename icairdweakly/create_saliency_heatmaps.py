@@ -106,11 +106,13 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
 
                     if depth > 1:
                         if threshold_mode == 'var':
-                            local_saliency = -torch.var(torch.mean(local_saliency, dim=(-1,-2)))
+                            local_saliency = -torch.var(torch.mean(local_saliency[local_saliency>0], dim=(-1,-2)))
                         else:
                             local_saliency = torch.max(diff_func(local_saliency))
                     else:
                         local_saliency = 0
+
+                    print(local_saliency)
 
                     # If salience of region is greater than the average, generate higher resolution mask
                     if local_saliency >= threshold:
