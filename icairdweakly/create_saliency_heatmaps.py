@@ -55,7 +55,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
         dim = min(input_x_dim, input_y_dim)
         total_masks = 0
         depth = 0
-        num_cells = int(max(np.ceil(np.log2(dim)), 1) / 8)
+        num_cells = int(max(np.ceil(np.log2(dim)), 1) / 4)
         base_max_depth = int(np.log2(dim / num_cells)) - 2
         if max_depth == -1 or max_depth > base_max_depth + 2:
             max_depth = base_max_depth
