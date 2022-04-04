@@ -228,18 +228,19 @@ def sort_coords(coords, centre):
 
 
 def overlap_coords(coords, overlap):
-    olc = []
-    for c in coords:
+    num_coords = len(coords)
+    for i in range(num_coords):
+        c = coords[i]
         o = [c[0] + overlap, c[1]]
-        if o not in olc: olc.append(o)
+        if o not in coords: coords.append(o)
         o = [c[0] - overlap, c[1]]
-        if o not in olc: olc.append(o)
+        if o not in coords: coords.append(o)
         o = [c[0], c[1] + overlap]
-        if o not in olc: olc.append(o)
+        if o not in coords: coords.append(o)
         o = [c[0], c[1] - overlap]
-        if o not in olc: olc.append(o)
+        if o not in coords: coords.append(o)
 
-    return list(set(coords))
+    return coords
 
 
 if __name__ == '__main__':
