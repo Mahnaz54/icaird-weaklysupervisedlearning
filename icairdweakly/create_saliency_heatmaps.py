@@ -113,8 +113,6 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
                     else:
                         local_saliency = 0
 
-                    print(local_saliency)
-
                     # If salience of region is greater than the average, generate higher resolution mask
                     if local_saliency >= threshold:
                         masks_list.append(abs(mask - 1))
