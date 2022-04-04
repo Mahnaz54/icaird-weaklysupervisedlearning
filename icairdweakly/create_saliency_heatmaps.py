@@ -55,7 +55,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
         dim = min(input_x_dim, input_y_dim)
         total_masks = 0
         depth = 0
-        num_cells = int(max(np.ceil(np.log2(dim)), 1) / args.hipe_cell_div)
+        num_cells = int(max(np.ceil(np.log2(dim)), 1) / 4)
         base_max_depth = int(np.log2(dim / num_cells)) - 2
         if max_depth == -1 or max_depth > base_max_depth + 2:
             max_depth = base_max_depth
@@ -277,7 +277,6 @@ if __name__ == '__main__':
                                                                                             'saliency detail at low '
                                                                                             'kernel sizes.')
     parser.add_argument('--flat_kernel_size', type=int, default=32, help='Kernel size for flat perturbation.')
-    parser.add_argument('--hipe_cell_div', type=int, default=2, help='Hyperparameter for hipe initialisation.')
     parser.add_argument('--centre', default='45000,45000', help='Coordinate in form x,y of central patch')
     parser.add_argument('--save_path', default='', help='where to save saliency segmentation png file. If empty, '
                                                         'no local save is used. All images are logged to WandB in any '
@@ -419,8 +418,9 @@ if __name__ == '__main__':
             full_img[:, x: x + pdim, y:y + pdim] += img
             full_sal_map[:, x:x + pdim, y:y + pdim] += sal_maps
 
-        full_img = full_img[:, pdim//2:-pdim//2,pdim//2:-pdim//2]
-        full_sal_map = full_sal_map[:, pdim//2:-pdim//2,pdim//2:-pdim//2]
+        if args.overlap:
+            full_img = full_img[:, pdim//2:-pdim//2,pdim//2:-pdim//2]
+            full_sal_map = full_sal_map[:, pdim//2:-pdim//2,pdim//2:-pdim//2]
         print('Calculating saliency segmentation...')
         max_seg = torch.argmax(full_sal_map, dim=0).int()
         min_seg = torch.argmin(full_sal_map, dim=0).int()
