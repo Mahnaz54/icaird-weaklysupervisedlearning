@@ -227,6 +227,13 @@ def sort_coords(coords, centre):
     return coords
 
 
+def overlap_coords(coords, overlap):
+    olc = []
+    for c in coords:
+        olc.append([c[0] + overlap, c[1] + overlap])
+    return coords.extend(olc)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Saliency segmentation script')
     parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00033-01.isyntax',
@@ -264,6 +271,7 @@ if __name__ == '__main__':
     parser.add_argument('--save_path', default='', help='where to save saliency segmentation png file. If empty, '
                                                         'no local save is used. All images are logged to WandB in any '
                                                         'case.')
+    parser.add_argument('--overlap', default=False, action='store_true', help='Overlap patches')
     parser.add_argument('--overwrite', default=False, action='store_true', help='Overwrite existing saliency '
                                                                                 'segmentation patches, if they exist')
 
@@ -323,6 +331,8 @@ if __name__ == '__main__':
             })
 
         coords = sort_coords(coords, centre=args.centre)[:max_patches]
+        if args.overlap:
+            coords = overlap_coords(coords)
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
             print('{}/{} Patch coords: {}'.format(i + 1, max_patches, coord))
