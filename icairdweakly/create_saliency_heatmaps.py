@@ -325,7 +325,6 @@ if __name__ == '__main__':
         min_x, min_y, max_x, max_y = xdim, ydim, 0, 0
 
         pdim = patch_size // args.downsample
-        all_coords = []
 
         max_patches = len(coords) if args.max_patches == -1 or args.max_patches > len(coords) else args.max_patches
         wandb.log({
@@ -335,6 +334,7 @@ if __name__ == '__main__':
         coords = sort_coords(coords, centre=args.centre)[:max_patches]
         if args.overlap:
             coords = overlap_coords(coords, pdim//2)
+            max_patches = len(coords)
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
             print('{}/{} Patch coords: {}'.format(i + 1, max_patches, coord))
@@ -407,8 +407,8 @@ if __name__ == '__main__':
                 img = F.interpolate(img.unsqueeze(0), (pdim, pdim))[0]
                 sal_maps = F.interpolate(sal_maps.unsqueeze(0), (pdim, pdim))[0]
 
-            full_img[:, x: x + pdim, y:y + pdim] = img
-            full_sal_map[:, x:x + pdim, y:y + pdim] = sal_maps
+            full_img[:, x: x + pdim, y:y + pdim] += img
+            full_sal_map[:, x:x + pdim, y:y + pdim] += sal_maps
 
         print('Calculating saliency segmentation...')
         max_seg = torch.argmax(full_sal_map, dim=0).int()
