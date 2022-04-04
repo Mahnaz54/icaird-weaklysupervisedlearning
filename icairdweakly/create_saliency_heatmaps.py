@@ -326,6 +326,7 @@ if __name__ == '__main__':
         for i, coord in enumerate(coords):
             print('{}/{} Patch coords: {}'.format(i + 1, max_patches, coord))
 
+            print(not args.overwrite)
             if os.path.exists('sal_seg/{}/sal_seg_{}'.format(args_code, coord) and not args.overwrite):
                 print('Found existing saliency segmentation patch for coord {}, skipping...'.format(coord))
             else:
