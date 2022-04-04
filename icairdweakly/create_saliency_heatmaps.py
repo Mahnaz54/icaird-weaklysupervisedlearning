@@ -45,7 +45,7 @@ def adjust_label_order_for_wandb(x):
 
 
 def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, perturbation_type='mean',
-                              threshold_mode='std', return_info=False, diff_func=torch.relu, max_depth=-1,
+                              threshold_mode='var', return_info=False, diff_func=torch.relu, max_depth=-1,
                               verbose=True):
     if verbose: print('\nBelieve the HiPe!')
     with torch.no_grad():
@@ -75,8 +75,8 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
             b_list = []
             num_cells *= 2
             depth += 1
-            if threshold_mode == 'std':
-                threshold = torch.abs(torch.std(torch.amax(saliency, dim=(-1,-2))))
+            if threshold_mode == 'var':
+                threshold = torch.var(torch.mean(saliency, dim=(-1,-2)))
             elif threshold_mode == 'mean':
                 threshold = torch.mean(saliency)
             else:
@@ -105,9 +105,8 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
                     local_saliency = F.interpolate(mask, (input_y_dim, input_x_dim), mode=interp_mode) * saliency
 
                     if depth > 1:
-                        if threshold_mode == 'std':
-                            local_saliency = torch.abs(torch.std(torch.amax(local_saliency, dim=(-1,-2))))
-                            print(local_saliency)
+                        if threshold_mode == 'var':
+                            local_saliency = torch.var(torch.amax(local_saliency, dim=(-1,-2)))
                         else:
                             local_saliency = torch.max(diff_func(local_saliency))
                     else:
@@ -264,6 +263,8 @@ if __name__ == '__main__':
     parser.add_argument('--save_path', default='', help='where to save saliency segmentation png file. If empty, '
                                                         'no local save is used. All images are logged to WandB in any '
                                                         'case.')
+    parser.add_argument('--overwrite', default=False, action='store_true', help='Overwrite existing saliency '
+                                                                                'segmentation patches, if they exist')
 
     args = parser.parse_args()
 
@@ -325,7 +326,7 @@ if __name__ == '__main__':
         for i, coord in enumerate(coords):
             print('{}/{} Patch coords: {}'.format(i + 1, max_patches, coord))
 
-            if os.path.exists('sal_seg/{}/sal_seg_{}'.format(args_code, coord)):
+            if os.path.exists('sal_seg/{}/sal_seg_{}'.format(args_code, coord) and not args.overwrite):
                 print('Found existing saliency segmentation patch for coord {}, skipping...'.format(coord))
             else:
                 img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(
