@@ -76,7 +76,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
             num_cells *= 2
             depth += 1
             if threshold_mode == 'std':
-                threshold = torch.abs(torch.std(torch.max(saliency, dim=(-1,-2))))
+                threshold = torch.abs(torch.std(torch.amax(saliency, dim=(-1,-2))))
             elif threshold_mode == 'mean':
                 threshold = torch.mean(saliency)
             else:
