@@ -106,7 +106,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
 
                     if depth > 1:
                         if threshold_mode == 'var':
-                            local_saliency = -torch.var(torch.amax(local_saliency, dim=(-1,-2)))
+                            local_saliency = -torch.std(torch.amax(local_saliency, dim=(-1,-2)))
                             print(local_saliency)
                         else:
                             local_saliency = torch.max(local_saliency)
