@@ -45,7 +45,7 @@ def adjust_label_order_for_wandb(x):
 
 
 def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, perturbation_type='mean',
-                              threshold_mode='var', return_info=False, diff_func=torch.relu, max_depth=-1,
+                              threshold_mode='mid-range', return_info=False, diff_func=torch.relu, max_depth=-1,
                               verbose=True):
     if verbose: print('\nBelieve the HiPe!')
     with torch.no_grad():
@@ -76,8 +76,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
             num_cells *= 2
             depth += 1
             if threshold_mode == 'var':
-                threshold = torch.amin(saliency, dim=(-1, -2)) + (
-                            (torch.amax(saliency, dim=(-1, -2)) - torch.amin(saliency, dim=(-1, -2))) / 2)
+                threshold = torch.amin(saliency, dim=(-1,-2)) + ((torch.amax(saliency, dim=(-1,-2)) - torch.amin(saliency, dim=(-1,-2))) / 2)
                 threshold = -torch.var(threshold)
             elif threshold_mode == 'mean':
                 threshold = torch.mean(saliency)
@@ -85,7 +84,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
                 threshold = torch.min(saliency) + ((torch.max(saliency) - torch.min(saliency)) / 2)
 
             print('Threshold: {}'.format(threshold))
-            thresholds_d_list.append(threshold)
+            thresholds_d_list.append(diff_func(threshold))
 
             y_ixs = range(-1, num_cells)
             x_ixs = range(-1, num_cells)
@@ -108,9 +107,9 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
 
                     if depth > 1:
                         if threshold_mode == 'var':
-                            local_saliency = -torch.var(torch.amax(local_saliency, dim=(-1, -2)))
+                            local_saliency = -torch.var(torch.amax(local_saliency, dim=(-1,-2)))
                         else:
-                            local_saliency = torch.max(local_saliency)
+                            local_saliency = torch.max(diff_func(local_saliency))
                     else:
                         local_saliency = 0
 
