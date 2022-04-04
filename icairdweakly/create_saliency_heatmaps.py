@@ -324,9 +324,11 @@ if __name__ == '__main__':
         coords = sort_coords(coords, centre=args.centre)[:max_patches]
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
+
             print('{}/{} Patch coords: {}'.format(i + 1, max_patches, coord))
 
-            if os.path.exists('sal_seg/{}/sal_seg_{}'.format(args_code, coord) and not args.overwrite):
+            print('Overwrite: {}'.format(args.overwrite))
+            if (not args.overwrite) and os.path.exists('sal_seg/{}/sal_seg_{}'.format(args_code, coord)):
                 print('Found existing saliency segmentation patch for coord {}, skipping...'.format(coord))
             else:
                 img = transforms(wsi.read_region(RegionRequest(coord, patch_level, (patch_size, patch_size)))).to(
