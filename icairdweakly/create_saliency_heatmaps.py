@@ -76,7 +76,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
             num_cells *= 2
             depth += 1
             if threshold_mode == 'var':
-                threshold = torch.var(torch.mean(saliency, dim=(-1,-2)))
+                threshold = -torch.var(torch.mean(saliency, dim=(-1,-2)))
             elif threshold_mode == 'mean':
                 threshold = torch.mean(saliency)
             else:
@@ -106,7 +106,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
 
                     if depth > 1:
                         if threshold_mode == 'var':
-                            local_saliency = torch.var(torch.amax(local_saliency, dim=(-1,-2)))
+                            local_saliency = -torch.var(torch.mean(local_saliency, dim=(-1,-2)))
                         else:
                             local_saliency = torch.max(diff_func(local_saliency))
                     else:
@@ -324,10 +324,8 @@ if __name__ == '__main__':
         coords = sort_coords(coords, centre=args.centre)[:max_patches]
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
-
             print('{}/{} Patch coords: {}'.format(i + 1, max_patches, coord))
 
-            print('Overwrite: {}'.format(args.overwrite))
             if (not args.overwrite) and os.path.exists('sal_seg/{}/sal_seg_{}'.format(args_code, coord)):
                 print('Found existing saliency segmentation patch for coord {}, skipping...'.format(coord))
             else:
