@@ -237,7 +237,7 @@ def overlap_coords(coords, overlap):
 
     coords.extend(olc)
 
-    return list(set(coords))
+    return list(set(list(coords)))
 
 
 if __name__ == '__main__':
