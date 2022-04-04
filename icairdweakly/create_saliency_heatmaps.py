@@ -230,7 +230,11 @@ def sort_coords(coords, centre):
 def overlap_coords(coords, overlap):
     olc = []
     for c in coords:
-        olc.append([c[0] + overlap, c[1] + overlap])
+        o_c = [c[0] + overlap, c[1] + overlap]
+        olc.append(o_c)
+        o_c = [c[0] - overlap, c[1] - overlap]
+        if o_c not in olc:
+            olc.append(o_c)
     coords.extend(olc)
 
     return coords
