@@ -333,7 +333,7 @@ if __name__ == '__main__':
 
         coords = sort_coords(coords, centre=args.centre)[:max_patches]
         if args.overlap:
-            coords = overlap_coords(coords, pdim//2)
+            coords = overlap_coords(coords, patch_size//2)
             max_patches = len(coords)
         print('Generating patch-level saliency...')
         for i, coord in enumerate(coords):
