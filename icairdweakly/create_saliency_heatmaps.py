@@ -228,6 +228,7 @@ def sort_coords(coords, centre):
 
 
 def overlap_coords(coords, overlap):
+    coords = coords.tolist()
     num_coords = len(coords)
     for i in range(num_coords):
         c = coords[i]
