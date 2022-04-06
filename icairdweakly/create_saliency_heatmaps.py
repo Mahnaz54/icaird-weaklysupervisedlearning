@@ -362,7 +362,7 @@ if __name__ == '__main__':
                 else:
                     sal_maps, _ = hierarchical_perturbation(model, img.unsqueeze(0),
                                                             perturbation_type=args.perturbation_type,
-                                                            interp_mode='nearest', verbose=True,
+                                                            interp_mode=args.interp_mode, verbose=True,
                                                             max_depth=args.max_depth,
                                                             threshold_mode=args.threshold_mode,
                                                             cell_init=args.cell_init)
