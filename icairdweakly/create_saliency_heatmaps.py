@@ -46,7 +46,7 @@ def adjust_label_order_for_wandb(x):
 
 def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, perturbation_type='mean',
                               threshold_mode='var', return_info=False, diff_func=torch.relu, max_depth=-1,
-                              verbose=True):
+                              verbose=True, cell_init=2):
     if verbose: print('\nBelieve the HiPe!')
     with torch.no_grad():
         dev = input.device
@@ -55,7 +55,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
         dim = min(input_x_dim, input_y_dim)
         total_masks = 0
         depth = 0
-        num_cells = int(max(np.ceil(np.log2(dim)), 1) / 2)
+        num_cells = int(max(np.ceil(np.log2(dim)), 1) / cell_init)
         base_max_depth = int(np.log2(dim / num_cells)) - 2
         if max_depth == -1 or max_depth > base_max_depth + 2:
             max_depth = base_max_depth
@@ -253,11 +253,12 @@ if __name__ == '__main__':
     parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
                         help='path to h5 patch file')
     parser.add_argument('--max_patches', type=int, default=100, help='Number of patches to extract and segment')
-    parser.add_argument('--hipe_max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
+    parser.add_argument('--cell_init', type=int, default=2, help='HiPe cell initialisation hyperparameter.')
+    parser.add_argument('--max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
                                                                       'more detailed but takes much longer.')
     parser.add_argument('--perturbation_type', default='fade', help='Perturbation substrate for use in '
                                                                     'hierarchical perturbation.')
-    parser.add_argument('--hipe_interp_mode', default='nearest', help='Interpolation mode for hierarchical '
+    parser.add_argument('--interp_mode', default='nearest', help='Interpolation mode for hierarchical '
                                                                       'perturbation')
     parser.add_argument('--downsample', type=int, default=8, help='Downsample for final image and saliency '
                                                                   'segmentation stitching. 1 = no downsampling. If '
@@ -314,7 +315,7 @@ if __name__ == '__main__':
     slide_name = args.slide_path.split('/')[-1].split('.')[0]
 
     args_code = '-'.join([str(s) for s in
-                          [slide_name, args.hipe_max_depth, args.perturbation_type, args.hipe_interp_mode,
+                          [slide_name, args.max_depth, args.perturbation_type, args.interp_mode,
                            args.downsample, args.use_flat_perturbation, args.flat_kernel_size, args.threshold_mode]])
     print(args_code)
 
@@ -362,13 +363,14 @@ if __name__ == '__main__':
                 else:
                     sal_maps, _ = hierarchical_perturbation(model, img.unsqueeze(0),
                                                             perturbation_type=args.perturbation_type,
-                                                            interp_mode=args.hipe_interp_mode, verbose=True,
-                                                            max_depth=args.hipe_max_depth,
-                                                            threshold_mode=args.threshold_mode)
+                                                            interp_mode=args.interp_mode, verbose=True,
+                                                            max_depth=args.max_depth,
+                                                            threshold_mode=args.threshold_mode,
+                                                            cell_init=args.cell_init)
 
-                torch.save(F.interpolate(img.unsqueeze(0), (pdim, pdim), mode=args.hipe_interp_mode)[0],
+                torch.save(F.interpolate(img.unsqueeze(0), (pdim, pdim), mode=args.interp_mode)[0],
                            'sal_seg/{}/img_{}'.format(args_code, coord))
-                torch.save(F.interpolate(sal_maps.unsqueeze(0), (pdim, pdim), mode=args.hipe_interp_mode)[0],
+                torch.save(F.interpolate(sal_maps.unsqueeze(0), (pdim, pdim), mode=args.interp_mode)[0],
                            'sal_seg/{}/sal_seg_{}'.format(args_code, coord))
                 if args.save_high_res_patches:
                     max_seg = torch.argmax(sal_maps, dim=0).int()
