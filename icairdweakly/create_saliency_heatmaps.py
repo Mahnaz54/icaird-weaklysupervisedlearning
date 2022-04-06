@@ -316,7 +316,7 @@ if __name__ == '__main__':
 
     args_code = '-'.join([str(s) for s in
                           [slide_name, args.hipe_max_depth, args.perturbation_type, args.hipe_interp_mode,
-                           args.downsample, args.use_flat_perturbation, args.flat_kernel_size]])
+                           args.downsample, args.use_flat_perturbation, args.flat_kernel_size, args.threshold_mode]])
     print(args_code)
 
     # create sal_seg dir
