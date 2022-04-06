@@ -422,9 +422,9 @@ if __name__ == '__main__':
             full_img[:, x: x + pdim, y:y + pdim] = img
             full_sal_map[:, x:x + pdim, y:y + pdim] = torch.maximum(sal_maps, full_sal_map[:, x:x + pdim, y:y + pdim])
 
-        if args.overlap:
-            full_img = full_img[:, pdim // 2:-pdim // 2, pdim // 2:-pdim // 2]
-            full_sal_map = full_sal_map[:, pdim // 2:-pdim // 2, pdim // 2:-pdim // 2]
+        # if args.overlap:
+        #     full_img = full_img[:, pdim // 2:-pdim // 2, pdim // 2:-pdim // 2]
+        #     full_sal_map = full_sal_map[:, pdim // 2:-pdim // 2, pdim // 2:-pdim // 2]
         print('Calculating saliency segmentation...')
         max_seg = torch.argmax(full_sal_map, dim=0).int()
         min_seg = torch.argmin(full_sal_map, dim=0).int()
