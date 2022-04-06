@@ -45,7 +45,7 @@ def adjust_label_order_for_wandb(x):
 
 
 def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, perturbation_type='mean',
-                              threshold_mode='var', return_info=False, diff_func=torch.relu, max_depth=-1,
+                              threshold_mode=args.threshold_mode, return_info=False, diff_func=torch.relu, max_depth=-1,
                               verbose=True):
     if verbose: print('\nBelieve the HiPe!')
     with torch.no_grad():
@@ -279,6 +279,7 @@ if __name__ == '__main__':
                                                                                             'kernel sizes.')
     parser.add_argument('--flat_kernel_size', type=int, default=32, help='Kernel size for flat perturbation.')
     parser.add_argument('--centre', default='45000,45000', help='Coordinate in form x,y of central patch')
+    parser.add_argument('--threshold_mode', default='var', help='HiPe threshold mode')
     parser.add_argument('--save_path', default='', help='where to save saliency segmentation png file. If empty, '
                                                         'no local save is used. All images are logged to WandB in any '
                                                         'case.')
