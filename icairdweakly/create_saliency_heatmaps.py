@@ -45,7 +45,7 @@ def adjust_label_order_for_wandb(x):
 
 
 def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, perturbation_type='mean',
-                              threshold_mode=args.threshold_mode, return_info=False, diff_func=torch.relu, max_depth=-1,
+                              threshold_mode='var', return_info=False, diff_func=torch.relu, max_depth=-1,
                               verbose=True):
     if verbose: print('\nBelieve the HiPe!')
     with torch.no_grad():
@@ -364,7 +364,8 @@ if __name__ == '__main__':
                     sal_maps, _ = hierarchical_perturbation(model, img.unsqueeze(0),
                                                             perturbation_type=args.perturbation_type,
                                                             interp_mode=args.hipe_interp_mode, verbose=True,
-                                                            max_depth=args.hipe_max_depth)
+                                                            max_depth=args.hipe_max_depth,
+                                                            threshold_mode=args.threshold_mode)
 
                 torch.save(F.interpolate(img.unsqueeze(0), (pdim, pdim), mode=args.hipe_interp_mode)[0],
                            'sal_seg/{}/img_{}'.format(args_code, coord))
