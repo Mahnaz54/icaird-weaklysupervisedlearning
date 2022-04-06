@@ -258,8 +258,7 @@ if __name__ == '__main__':
                                                                  'more detailed but takes much longer.')
     parser.add_argument('--perturbation_type', default='fade', help='Perturbation substrate for use in '
                                                                     'hierarchical perturbation.')
-    parser.add_argument('--interp_mode', default='nearest', help='Interpolation mode for hierarchical '
-                                                                 'perturbation')
+    parser.add_argument('--interp_mode', default='nearest', help='Interpolation mode for up/downsampling')
     parser.add_argument('--downsample', type=int, default=8, help='Downsample for final image and saliency '
                                                                   'segmentation stitching. 1 = no downsampling. If '
                                                                   'all patches are used, low values will probably '
@@ -363,7 +362,7 @@ if __name__ == '__main__':
                 else:
                     sal_maps, _ = hierarchical_perturbation(model, img.unsqueeze(0),
                                                             perturbation_type=args.perturbation_type,
-                                                            interp_mode=args.interp_mode, verbose=True,
+                                                            interp_mode='nearest', verbose=True,
                                                             max_depth=args.max_depth,
                                                             threshold_mode=args.threshold_mode,
                                                             cell_init=args.cell_init)
