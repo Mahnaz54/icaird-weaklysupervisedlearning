@@ -246,11 +246,11 @@ def overlap_coords(coords, overlap):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Saliency segmentation script')
-    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00240-01.isyntax',
+    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00033-01.isyntax',
                         help='path to isyntax slide')
     parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0_checkpoint.pt',
                         help='path to model checkpoint')
-    parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00240-01.h5',
+    parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00033-01.h5',
                         help='path to h5 patch file')
     parser.add_argument('--max_patches', type=int, default=100, help='Number of patches to extract and segment')
     parser.add_argument('--cell_init', type=int, default=2, help='HiPe cell initialisation hyperparameter.')
@@ -258,7 +258,7 @@ if __name__ == '__main__':
                                                                  'more detailed but takes much longer.')
     parser.add_argument('--perturbation_type', default='fade', help='Perturbation substrate for use in '
                                                                     'hierarchical perturbation.')
-    parser.add_argument('--interp_mode', default='nearest', help='Interpolation mode for up/downsampling')
+    parser.add_argument('--interp_mode', default='bicubic', help='Interpolation mode for up/downsampling')
     parser.add_argument('--downsample', type=int, default=8, help='Downsample for final image and saliency '
                                                                   'segmentation stitching. 1 = no downsampling. If '
                                                                   'all patches are used, low values will probably '
