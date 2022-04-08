@@ -246,11 +246,13 @@ def overlap_coords(coords, overlap):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Saliency segmentation script')
-    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/IC-EN-00266-01.isyntax',
+    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/',
+                        help='path to isyntax slide')
+    parser.add_argument('--slide_name', type=str, default='IC-EN-00266-01',
                         help='path to isyntax slide')
     parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0_checkpoint.pt',
                         help='path to model checkpoint')
-    parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/IC-EN-00266-01.h5',
+    parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/',
                         help='path to h5 patch file')
     parser.add_argument('--max_patches', type=int, default=100, help='Number of patches to extract and segment')
     parser.add_argument('--cell_init', type=int, default=2, help='HiPe cell initialisation hyperparameter.')
@@ -309,7 +311,7 @@ if __name__ == '__main__':
     model = ModelUmbrella(feature_extractor, inf_model)
 
     # load WSI
-    wsi = WholeSlideImage(args.slide_path)
+    wsi = WholeSlideImage(args.slide_path + args.slide_name + '.isyntax')
     transforms = default_transforms()
     slide_name = args.slide_path.split('/')[-1].split('.')[0]
 
@@ -325,7 +327,7 @@ if __name__ == '__main__':
     if not os.path.exists('sal_seg/{}'.format(args_code)): os.mkdir('sal_seg/{}'.format(args_code))
 
     # load patch data
-    with h5py.File(args.patch_path, 'r') as f:
+    with h5py.File(args.patch_path + args.slide_name + '.h5', 'r') as f:
         coords = f['coords']
         patch_level = coords.attrs['patch_level']
         patch_size = coords.attrs['patch_size']
