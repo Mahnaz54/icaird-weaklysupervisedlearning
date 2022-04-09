@@ -313,10 +313,9 @@ if __name__ == '__main__':
     # load WSI
     wsi = WholeSlideImage(args.slide_path + args.slide_name + '.isyntax')
     transforms = default_transforms()
-    slide_name = args.slide_path.split('/')[-1].split('.')[0]
 
     args_code = '-'.join([str(s) for s in
-                          [slide_name, args.max_depth, args.perturbation_type, args.interp_mode, args.downsample,
+                          [args.slide_name, args.max_depth, args.perturbation_type, args.interp_mode, args.downsample,
                            args.use_flat_perturbation, args.flat_kernel_size, args.threshold_mode, args.cell_init]])
     print(args_code)
 
@@ -339,7 +338,7 @@ if __name__ == '__main__':
 
         max_patches = len(coords) if args.max_patches == -1 or args.max_patches > len(coords) else args.max_patches
         wandb.log({
-            'Patch Level': patch_level, 'Patch Size': patch_size, 'Num Patches': max_patches, 'Slide': slide_name
+            'Patch Level': patch_level, 'Patch Size': patch_size, 'Num Patches': max_patches, 'Slide': args.slide_name
             })
 
         coords = sort_coords(coords, centre=args.centre)[:max_patches]
@@ -446,7 +445,8 @@ if __name__ == '__main__':
             })
 
         if len(args.save_path) > 0:
-            Image.fromarray(full_sal_seg.numpy()).save(args.save_path + '_saliency_segmentation_' + slide_name + '.png')
+            Image.fromarray(full_sal_seg.numpy()).save(args.save_path + '_saliency_segmentation_' + args.slide_name +
+                                                       '.png')
         print('Done!')
 
     run.finish()
