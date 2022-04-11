@@ -460,8 +460,8 @@ if __name__ == '__main__':
                 scaled_an[scaled_an != 1.0] = 0.0
 
                 malignant_ss = full_sal_seg
-                malignant_ss[malignant_ss>0] = 1
-                malignant_ss = torch.abs(malignant_ss-1)
+                malignant_ss[malignant_ss != 0] = 1
+                malignant_ss = torch.abs(malignant_ss - 1).float()
 
                 malignant_an = scaled_an[0]
 
@@ -479,7 +479,8 @@ if __name__ == '__main__':
                 acc = (tp + tn) / (tp + tn + fp + fn)
                 dice = (2 * tp) / (2*tp + fp + fn)
 
-                wandb.log({'Expert': wandb.Image(scaled_an), 'Machine': wandb.Image(malignant_ss), 'Precision':p, 'Recall':r,
+                wandb.log({'Expert': wandb.Image(malignant_an), 'Machine': wandb.Image(malignant_ss), 'Precision':p,
+                           'Recall':r,
                            'F1':f1,
                 'Accuracy':acc,
                            'Dice':dice})
