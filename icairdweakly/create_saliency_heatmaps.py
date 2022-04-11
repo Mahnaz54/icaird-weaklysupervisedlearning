@@ -459,10 +459,9 @@ if __name__ == '__main__':
                 scaled_an = torch.sum(F.interpolate(img[:, :, an_x:an_x1, an_y:an_y1], (im_x, im_y)), axis=1)
                 scaled_an[scaled_an != 1.0] = 0.0
 
-                malignant_ss = full_sal_seg[0]
-                print(torch.sum(full_sal_seg[0]), torch.sum(full_sal_seg[1]), torch.sum(full_sal_seg[2]))
+                malignant_ss = full_sal_map[0]
+                print(torch.sum(full_sal_map[0]), torch.sum(full_sal_map[1]), torch.sum(full_sal_map[2]))
 
-                print(torch.min(full_sal_seg), torch.max(full_sal_seg))
                 malignant_an = scaled_an[0]
 
                 output = malignant_ss
