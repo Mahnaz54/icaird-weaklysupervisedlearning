@@ -250,6 +250,7 @@ class WholeSlideImage(object):
         def _create_contours_from_dict(annot):
             all_cnts = []
             for idx, annot_group in enumerate(annot):
+                print(annot_group)
                 contour_group = annot_group['coordinates']
                 if annot_group['type'] == 'Polygon':
                     for idx, contour in enumerate(contour_group):
