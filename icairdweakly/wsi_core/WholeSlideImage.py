@@ -267,6 +267,7 @@ class WholeSlideImage(object):
         with open(annot_path, "r") as f:
             annot = f.read()
             annot = eval(annot)
+            print(annot)
         self.contours_tumor  = _create_contours_from_dict(annot)
         self.contours_tumor = sorted(self.contours_tumor, key=cv2.contourArea, reverse=True)
 
