@@ -456,15 +456,15 @@ if __name__ == '__main__':
                 print(img.shape)
                 print(xdim, ydim)
 
-                an_x, an_y = img.shape[-1], img.shape[-2]
-                print(an_x, an_y)
+                anx, any = img.shape[-1], img.shape[-2]
+                print(anx, any)
 
-                an_scale_x, an_scale_y = xdim//an_x, ydim//an_y
+                an_scale_x, an_scale_y = xdim/anx, ydim/any
 
                 print(an_scale_x, an_scale_y)
                 an_x, an_x1, an_y, an_y1 = min_x//an_scale_x, max_x//an_scale_x, min_y//an_scale_y, max_y//an_scale_y
                 print(an_x, an_x1, an_y, an_y1)
-                scaled_an = F.interpolate(img[:,:,an_x:an_x1, an_y:an_y1], (an_scale_x, an_scale_y))[0]
+                scaled_an = F.interpolate(img[:,:,an_x:an_x1, an_y:an_y1], (an_scale_x*anx, an_scale_y*any))[0]
                 print(scaled_an.shape)
                 print(full_img.shape)
                 wandb.log({'Annotation': wandb.Image(scaled_an)})
