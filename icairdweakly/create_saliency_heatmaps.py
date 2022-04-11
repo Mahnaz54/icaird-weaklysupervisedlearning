@@ -253,7 +253,7 @@ if __name__ == '__main__':
                         help='path to model checkpoint')
     parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/',
                         help='path to h5 patch file')
-    parser.add_argument('--annotation_path', type=str, default='../annotations/', help='path to annotation images')
+    parser.add_argument('--xml_path', type=str, default='../annotations/', help='path to xml annotation files')
     parser.add_argument('--max_patches', type=int, default=100, help='Number of patches to extract and segment')
     parser.add_argument('--cell_init', type=int, default=2, help='HiPe cell initialisation hyperparameter.')
     parser.add_argument('--max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
@@ -312,6 +312,8 @@ if __name__ == '__main__':
 
     # load WSI
     wsi = WholeSlideImage(args.slide_path + args.slide_name + '.isyntax')
+    if len(args.xml_path) > 0:
+        wsi.initXML(args.xml_path)
     transforms = default_transforms()
 
     args_code = '-'.join([str(s) for s in
