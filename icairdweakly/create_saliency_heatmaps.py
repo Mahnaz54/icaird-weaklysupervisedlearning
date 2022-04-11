@@ -462,6 +462,7 @@ if __name__ == '__main__':
                 malignant_ss = full_sal_map[0]
                 print(torch.sum(full_sal_map[0]), torch.sum(full_sal_map[1]), torch.sum(full_sal_map[2]))
 
+                print(torch.min(malignant_ss), torch.max(malignant_ss))
                 malignant_an = scaled_an[0]
 
                 output = malignant_ss
