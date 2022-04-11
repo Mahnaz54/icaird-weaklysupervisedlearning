@@ -448,7 +448,8 @@ if __name__ == '__main__':
                                                        '.png')
 
         if len(args.annotation_path) > 0:
-            with Image.open(args.slide_name + "_mask.png") as im:
+            print('Evaluating segmentation performance...')
+            with Image.open(args.annotation_path + args.slide_name + "_mask.png") as im:
                 img = torch.Tensor(im)
                 print(img.shape)
 
