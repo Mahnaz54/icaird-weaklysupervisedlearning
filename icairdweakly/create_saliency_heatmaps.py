@@ -448,10 +448,11 @@ if __name__ == '__main__':
             Image.fromarray(full_sal_seg.numpy()).save(args.save_path + '_saliency_segmentation_' + args.slide_name +
                                                        '.png')
 
+        to_tensor= transforms.ToTensor()
         if len(args.annotation_path) > 0:
             print('Evaluating segmentation performance...')
             with Image.open(args.annotation_path + args.slide_name + "_mask.png") as im:
-                img = transforms.ToTensor(im)
+                img = to_tensor(im)
                 print(img.shape)
 
 
