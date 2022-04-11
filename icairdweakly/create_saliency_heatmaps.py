@@ -15,7 +15,7 @@ import wandb
 from scipy.ndimage.filters import gaussian_filter
 from PIL import Image
 import os
-from torchvision import transforms
+import torchvision
 
 
 def gkern(klen, nsig):
@@ -448,7 +448,7 @@ if __name__ == '__main__':
             Image.fromarray(full_sal_seg.numpy()).save(args.save_path + '_saliency_segmentation_' + args.slide_name +
                                                        '.png')
 
-        to_tensor = transforms.ToTensor()
+        to_tensor = torchvision.transforms.ToTensor()
         if len(args.annotation_path) > 0:
             print('Evaluating segmentation performance...')
             with Image.open(args.annotation_path + args.slide_name + "_mask.png") as im:
