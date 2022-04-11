@@ -460,8 +460,9 @@ if __name__ == '__main__':
                 scaled_an[scaled_an != 1.0] = 0.0
 
                 malignant_ss = full_sal_seg[0]
+                print(torch.sum(full_sal_seg[0], full_sal_seg[1], full_sal_seg[2]))
 
-                print(torch.min(malignant_ss), torch.max(malignant_ss))
+                print(torch.min(full_sal_seg), torch.max(full_sal_seg))
                 malignant_an = scaled_an[0]
 
                 output = malignant_ss
