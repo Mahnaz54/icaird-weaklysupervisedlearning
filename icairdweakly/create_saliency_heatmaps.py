@@ -253,7 +253,7 @@ if __name__ == '__main__':
                         help='path to model checkpoint')
     parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/',
                         help='path to h5 patch file')
-    parser.add_argument('--xml_path', type=str, default='../annotations/', help='path to xml annotation files')
+    parser.add_argument('--txt_path', type=str, default='../annotations/', help='path to txt annotation files')
     parser.add_argument('--max_patches', type=int, default=100, help='Number of patches to extract and segment')
     parser.add_argument('--cell_init', type=int, default=2, help='HiPe cell initialisation hyperparameter.')
     parser.add_argument('--max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
@@ -447,16 +447,15 @@ if __name__ == '__main__':
             Image.fromarray(full_sal_seg.numpy()).save(
                 args.save_path + '_saliency_segmentation_' + args.slide_name + '.png')
 
-        if len(args.xml_path) > 0:
+        if len(args.txt_path) > 0:
             print('Evaluating segmentation performance...')
-            wsi.initXML(args.xml_path + args.slide_name + '.txt')
+            wsi.initTxt(args.txt_path + args.slide_name + '.txt')
             annotation = wsi.visWSI(vis_level=0, color=(0, 255, 0), hole_color=(0, 0, 255), annot_color=(255, 0, 0),
                                      line_thickness=12, max_size=None, top_left=None, bot_right=None,
                                      custom_downsample=args.downsample, view_slide_only=False, number_contours=False,
                                      seg_display=False, annot_display=True)
 
-            print(annotation)
-            print(annotation.shape)
+            print(annotations.shape)
             print(full_img.shape)
             annot = annotation[:,min_x//args.downsample:max_x//args.downsample,
                          min_y//args.downsample:max_y//args.downsample]
