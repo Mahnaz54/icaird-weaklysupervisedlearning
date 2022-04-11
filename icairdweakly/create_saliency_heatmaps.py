@@ -449,13 +449,13 @@ if __name__ == '__main__':
 
         if len(args.txt_path) > 0:
             print('Evaluating segmentation performance...')
-            wsi.initTxt(args.txt_path + args.slide_name + '.txt')
+            wsi.initXML(args.txt_path + args.slide_name + '.txt')
             annotation = wsi.visWSI(vis_level=0, color=(0, 255, 0), hole_color=(0, 0, 255), annot_color=(255, 0, 0),
                                      line_thickness=12, max_size=None, top_left=None, bot_right=None,
                                      custom_downsample=args.downsample, view_slide_only=False, number_contours=False,
                                      seg_display=False, annot_display=True)
 
-            print(annotations.shape)
+            print(annotation.shape)
             print(full_img.shape)
             annot = annotation[:,min_x//args.downsample:max_x//args.downsample,
                          min_y//args.downsample:max_y//args.downsample]
