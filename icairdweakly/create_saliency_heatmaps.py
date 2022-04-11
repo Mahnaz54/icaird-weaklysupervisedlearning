@@ -459,8 +459,26 @@ if __name__ == '__main__':
                 scaled_an = torch.sum(F.interpolate(img[:, :, an_x:an_x1, an_y:an_y1], (im_x, im_y)), axis=1)
                 scaled_an[scaled_an != 1.0] = 0.0
 
-                wandb.log({'Annotation': wandb.Image(scaled_an)})
-                print(torch.unique(scaled_an, dim=1))
+                malignant_ss = full_sal_map[1]
+                malignant_an = scaled_an[0]
+
+                output = malignant_ss
+                target = malignant_an
+
+                tp = torch.sum(target * output)
+                tn = torch.sum((1 - target) * (1 - output))
+                fp = torch.sum((1 - target) * output)
+                fn = torch.sum(target * (1 - output))
+
+                p = tp / (tp + fp + 0.0001)
+                r = tp / (tp + fn + 0.0001)
+                f1 = 2 * p * r / (p + r + 0.0001)
+                acc = (tp + tn) / (tp + tn + fp + fn)
+                dice = (2 * tp) / (2*tp + fp + fn)
+
+                wandb.log({'Annotation': wandb.Image(scaled_an), 'Precision':p, 'Recall':r, 'F1':f1, 'Accuracy':acc,
+                           'Dice':dice})
+
 
         print('Done!')
 
