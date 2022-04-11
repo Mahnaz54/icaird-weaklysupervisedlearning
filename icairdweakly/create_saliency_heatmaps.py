@@ -461,6 +461,8 @@ if __name__ == '__main__':
 
                 malignant_ss = torch.round(full_sal_map[1])
                 malignant_an = scaled_an[0]
+                print(malignant_ss.shape, malignant_an.shape)
+                print(torch.unique(malignant_ss), torch.unique(malignant_an))
 
                 output = malignant_ss
                 target = malignant_an
