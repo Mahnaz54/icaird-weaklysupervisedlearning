@@ -449,7 +449,7 @@ if __name__ == '__main__':
 
         if len(args.xml_path) > 0:
             print('Evaluating segmentation performance...')
-            wsi.initXML(args.xml_path + args.slide_name + '.xml')
+            wsi.initXML(args.xml_path + args.slide_name + '.txt')
             annotation = wsi.visWSI(vis_level=0, color=(0, 255, 0), hole_color=(0, 0, 255), annot_color=(255, 0, 0),
                                      line_thickness=12, max_size=None, top_left=None, bot_right=None,
                                      custom_downsample=args.downsample, view_slide_only=False, number_contours=False,
