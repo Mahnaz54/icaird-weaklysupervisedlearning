@@ -245,6 +245,37 @@ class WholeSlideImage(object):
         self.contours_tumor  = [_createContour(coord_list) for coord_list in annotations]
         self.contours_tumor = sorted(self.contours_tumor, key=cv2.contourArea, reverse=True)
 
+
+    def initAnnotation(self, annot_path):
+        def _create_contours_from_dict(annot):
+            all_cnts = []
+            for idx, annot_group in enumerate(annot):
+                contour_group = annot_group['coordinates']
+                if annot_group['type'] == 'Polygon':
+                    for idx, contour in enumerate(contour_group):
+                        contour = np.array(contour).astype(np.int32).reshape(-1,1,2)
+                        all_cnts.append(contour)
+
+                else:
+                    for idx, sgmt_group in enumerate(contour_group):
+                        contour = []
+                        for sgmt in sgmt_group:
+                            contour.extend(sgmt)
+                        contour = np.array(contour).astype(np.int32).reshape(-1,1,2)
+                        all_cnts.append(contour)
+
+            return all_cnts
+
+        with open(annot_path, "r") as f:
+            annot = f.read()
+            print(annot)
+
+            annot.replace('false', 'False')
+            annot = eval(annot)
+        self.contours_tumor  = _create_contours_from_dict(annot)
+        self.contours_tumor = sorted(self.contours_tumor, key=cv2.contourArea, reverse=True)
+
+
     def initTxt(self,annot_path):
         def _create_contours_from_dict(annot):
             all_cnts = []
