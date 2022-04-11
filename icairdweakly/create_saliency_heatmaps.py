@@ -452,22 +452,13 @@ if __name__ == '__main__':
             print('Evaluating segmentation performance...')
             with Image.open(args.annotation_path + args.slide_name + "_mask.png") as im:
                 img = to_tensor(im).unsqueeze(0)
-                print(img.shape)
-                print(xdim, ydim)
-
                 an_x, an_y = img.shape[-1], img.shape[-2]
-                print(an_x, an_y)
-
                 an_scale_x, an_scale_y = xdim / an_x, ydim / an_y
-
-                print(an_scale_x, an_scale_y)
                 an_x, an_x1, an_y, an_y1 = int(min_x // an_scale_x), int(max_x // an_scale_x), int(
                     min_y // an_scale_y), int(max_y // an_scale_y)
-                print(an_x, an_x1, an_y, an_y1)
                 scaled_an = F.interpolate(img[:, :, an_x:an_x1, an_y:an_y1], (im_x, im_y))[0]
-                print(scaled_an.shape)
-                print(full_img.shape)
                 wandb.log({'Annotation': wandb.Image(scaled_an)})
+                print(torch.unique(scaled_an))
 
         print('Done!')
 
