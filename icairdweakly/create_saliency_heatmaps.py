@@ -253,7 +253,7 @@ if __name__ == '__main__':
                         help='path to model checkpoint')
     parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/',
                         help='path to h5 patch file')
-    parser.add_argument('--xml_path', type=str, default='../annotations/', help='path to xml annotation files')
+    parser.add_argument('--txt_path', type=str, default='../annotations/', help='path to txt annotation files')
     parser.add_argument('--max_patches', type=int, default=100, help='Number of patches to extract and segment')
     parser.add_argument('--cell_init', type=int, default=2, help='HiPe cell initialisation hyperparameter.')
     parser.add_argument('--max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
@@ -312,8 +312,6 @@ if __name__ == '__main__':
 
     # load WSI
     wsi = WholeSlideImage(args.slide_path + args.slide_name + '.isyntax')
-    if len(args.xml_path) > 0:
-        wsi.initXML(args.xml_path)
     transforms = default_transforms()
 
     args_code = '-'.join([str(s) for s in
@@ -449,43 +447,50 @@ if __name__ == '__main__':
             Image.fromarray(full_sal_seg.numpy()).save(
                 args.save_path + '_saliency_segmentation_' + args.slide_name + '.png')
 
-        to_tensor = torchvision.transforms.ToTensor()
-        if len(args.annotation_path) > 0:
+        if len(args.txt_path) > 0:
             print('Evaluating segmentation performance...')
-            with Image.open(args.annotation_path + args.slide_name + "_mask.png") as im:
-                img = to_tensor(im).unsqueeze(0)
-                an_x, an_y = img.shape[-1], img.shape[-2]
-                an_scale_x, an_scale_y = xdim / an_x, ydim / an_y
-                an_x, an_x1, an_y, an_y1 = int(min_x // an_scale_x), int(max_x // an_scale_x), int(
-                    min_y // an_scale_y), int(max_y // an_scale_y)
-                scaled_an = torch.sum(F.interpolate(img[:, :, an_x:an_x1, an_y:an_y1], (im_x, im_y)), axis=1)
-                scaled_an[scaled_an != 1.0] = 0.0
+            wsi.initTxt(args.txt_path + args.slide_name + '.txt')
+            annotation = wsi.visWSI(vis_level=0, color=(0, 255, 0), hole_color=(0, 0, 255), annot_color=(255, 0, 0),
+                                     line_thickness=12, max_size=None, top_left=None, bot_right=None,
+                                     custom_downsample=args.downsample, view_slide_only=False, number_contours=False,
+                                     seg_display=False, annot_display=True)
 
-                malignant_ss = full_sal_seg
-                malignant_ss[malignant_ss != 0] = 1
-                malignant_ss = torch.abs(malignant_ss - 1).float()
+            print(annotations.shape)
+            print(full_img.shape)
+            annot = annotation[:,min_x//args.downsample:max_x//args.downsample,
+                         min_y//args.downsample:max_y//args.downsample]
 
-                malignant_an = scaled_an[0]
+            print(annot)
 
-                output = malignant_ss
-                target = malignant_an
+            print(annot.shape)
+            print()
+            annot[annot != 1.0] = 0.0
 
-                tp = torch.sum(target * output)
-                tn = torch.sum((1 - target) * (1 - output))
-                fp = torch.sum((1 - target) * output)
-                fn = torch.sum(target * (1 - output))
+            malignant_ss = full_sal_seg
+            malignant_ss[malignant_ss != 0] = 1
+            malignant_ss = torch.abs(malignant_ss - 1).float()
 
-                p = tp / (tp + fp + 0.0001)
-                r = tp / (tp + fn + 0.0001)
-                f1 = 2 * p * r / (p + r + 0.0001)
-                acc = (tp + tn) / (tp + tn + fp + fn)
-                dice = (2 * tp) / (2*tp + fp + fn)
+            malignant_an = annot[0]
 
-                wandb.log({'Expert': wandb.Image(malignant_an), 'Machine': wandb.Image(malignant_ss), 'Precision':p,
-                           'Recall':r,
-                           'F1':f1,
-                'Accuracy':acc,
-                           'Dice':dice})
+            output = malignant_ss
+            target = malignant_an
+
+            tp = torch.sum(target * output)
+            tn = torch.sum((1 - target) * (1 - output))
+            fp = torch.sum((1 - target) * output)
+            fn = torch.sum(target * (1 - output))
+
+            p = tp / (tp + fp + 0.0001)
+            r = tp / (tp + fn + 0.0001)
+            f1 = 2 * p * r / (p + r + 0.0001)
+            acc = (tp + tn) / (tp + tn + fp + fn)
+            dice = (2 * tp) / (2*tp + fp + fn)
+
+            wandb.log({'Expert': wandb.Image(malignant_an), 'Machine': wandb.Image(malignant_ss), 'Precision':p,
+                       'Recall':r,
+                       'F1':f1,
+            'Accuracy':acc,
+                       'Dice':dice})
 
 
         print('Done!')
