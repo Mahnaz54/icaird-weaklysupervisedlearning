@@ -456,7 +456,7 @@ if __name__ == '__main__':
                 an_scale_x, an_scale_y = xdim / an_x, ydim / an_y
                 an_x, an_x1, an_y, an_y1 = int(min_x // an_scale_x), int(max_x // an_scale_x), int(
                     min_y // an_scale_y), int(max_y // an_scale_y)
-                scaled_an = F.interpolate(img[:, :, an_x:an_x1, an_y:an_y1], (im_x, im_y))[0]
+                scaled_an = torch.sum(F.interpolate(img[:, :, an_x:an_x1, an_y:an_y1], (im_x, im_y)), axis=1)
                 wandb.log({'Annotation': wandb.Image(scaled_an)})
                 print(torch.unique(scaled_an, dim=1))
 
