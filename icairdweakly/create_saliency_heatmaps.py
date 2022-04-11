@@ -78,7 +78,7 @@ def hierarchical_perturbation(model, input, interp_mode='nearest', resize=None, 
             depth += 1
             if threshold_mode == 'var':
                 threshold = torch.amin(saliency, dim=(-1, -2)) + (
-                            (torch.amax(saliency, dim=(-1, -2)) - torch.amin(saliency, dim=(-1, -2))) / 2)
+                        (torch.amax(saliency, dim=(-1, -2)) - torch.amin(saliency, dim=(-1, -2))) / 2)
                 threshold = -torch.var(threshold)
             elif threshold_mode == 'mean':
                 threshold = torch.mean(saliency)
@@ -247,16 +247,13 @@ def overlap_coords(coords, overlap):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Saliency segmentation script')
-    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/',
-                        help='path to isyntax slide')
-    parser.add_argument('--slide_name', type=str, default='IC-EN-00266-01',
-                        help='path to isyntax slide')
+    parser.add_argument('--slide_path', type=str, default='../heatmaps/demo/slides/', help='path to isyntax slide')
+    parser.add_argument('--slide_name', type=str, default='IC-EN-00266-01', help='path to isyntax slide')
     parser.add_argument('--ckpt_path', type=str, default='../heatmaps/demo/ckpts/s_0_checkpoint.pt',
                         help='path to model checkpoint')
     parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/',
                         help='path to h5 patch file')
-    parser.add_argument('--annotation_path', type=str, default='../annotations/',
-                        help='path to annotation images')
+    parser.add_argument('--annotation_path', type=str, default='../annotations/', help='path to annotation images')
     parser.add_argument('--max_patches', type=int, default=100, help='Number of patches to extract and segment')
     parser.add_argument('--cell_init', type=int, default=2, help='HiPe cell initialisation hyperparameter.')
     parser.add_argument('--max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
@@ -433,10 +430,12 @@ if __name__ == '__main__':
 
         print('Logging images...')
         wandb.log({
-            'Image dimensions': [im_x, im_y], 'Region coords': [min_x, max_x, min_y, max_y],
-            'Saliency': [wandb.Image(full_sal_map[n], caption=label_list[n]) for n in range(NUM_CLASSES)],
-            'Full Blended Saliency': wandb.Image(full_sal_map),
-            'Full Saliency Segmentation': wandb.Image(full_img, masks={
+            'Image dimensions'                                                         : [im_x, im_y],
+            'Region coords'                                                            : [min_x, max_x, min_y, max_y],
+            'Saliency'                                                                 : [
+                wandb.Image(full_sal_map[n], caption=label_list[n]) for n in range(NUM_CLASSES)],
+            'Full Blended Saliency'                                                    : wandb.Image(full_sal_map),
+            'Full Saliency Segmentation'                                               : wandb.Image(full_img, masks={
                 "predictions": {
                     "mask_data"   : adjust_label_order_for_wandb(full_sal_seg.int().numpy()),
                     "class_labels": wandb_class_labels
@@ -445,8 +444,8 @@ if __name__ == '__main__':
             })
 
         if len(args.save_path) > 0:
-            Image.fromarray(full_sal_seg.numpy()).save(args.save_path + '_saliency_segmentation_' + args.slide_name +
-                                                       '.png')
+            Image.fromarray(full_sal_seg.numpy()).save(
+                args.save_path + '_saliency_segmentation_' + args.slide_name + '.png')
 
         to_tensor = torchvision.transforms.ToTensor()
         if len(args.annotation_path) > 0:
@@ -459,19 +458,16 @@ if __name__ == '__main__':
                 an_x, an_y = img.shape[-1], img.shape[-2]
                 print(an_x, an_y)
 
-                an_scale_x, an_scale_y = xdim/an_x, ydim/an_y
+                an_scale_x, an_scale_y = xdim / an_x, ydim / an_y
 
                 print(an_scale_x, an_scale_y)
-                an_x, an_x1, an_y, an_y1 = min_x//an_scale_x, max_x//an_scale_x, min_y//an_scale_y, max_y//an_scale_y
+                an_x, an_x1, an_y, an_y1 = int(min_x // an_scale_x), int(max_x // an_scale_x), int(
+                    min_y // an_scale_y), int(max_y // an_scale_y)
                 print(an_x, an_x1, an_y, an_y1)
-                an_x_dim, an_y_dim = int(an_scale_x*(an_x1 - an_x)), int(an_scale_y*(an_y1 - an_y))
-                scaled_an = F.interpolate(img[:,:,an_x:an_x1, an_y:an_y1], (an_x_dim, an_y_dim))[0]
+                scaled_an = F.interpolate(img[:, :, an_x:an_x1, an_y:an_y1], (im_x, im_y))[0]
                 print(scaled_an.shape)
                 print(full_img.shape)
                 wandb.log({'Annotation': wandb.Image(scaled_an)})
-
-
-
 
         print('Done!')
 
