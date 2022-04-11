@@ -254,6 +254,8 @@ if __name__ == '__main__':
                         help='path to model checkpoint')
     parser.add_argument('--patch_path', type=str, default='../heatmaps/demo/patches/patches/',
                         help='path to h5 patch file')
+    parser.add_argument('--annotation_path', type=str, default='../annotations/',
+                        help='path to annotation images')
     parser.add_argument('--max_patches', type=int, default=100, help='Number of patches to extract and segment')
     parser.add_argument('--cell_init', type=int, default=2, help='HiPe cell initialisation hyperparameter.')
     parser.add_argument('--max_depth', type=int, default=1, help='Hierarchical perturbation depth. Higher is '
@@ -444,6 +446,14 @@ if __name__ == '__main__':
         if len(args.save_path) > 0:
             Image.fromarray(full_sal_seg.numpy()).save(args.save_path + '_saliency_segmentation_' + args.slide_name +
                                                        '.png')
+
+        if len(args.annotation_path) > 0:
+            with Image.open(args.slide_name + "_mask.png") as im:
+                img = torch.Tensor(im)
+                print(img.shape)
+
+
+
         print('Done!')
 
     run.finish()
