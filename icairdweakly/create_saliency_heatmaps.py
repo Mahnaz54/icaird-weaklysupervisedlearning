@@ -16,6 +16,7 @@ from scipy.ndimage.filters import gaussian_filter
 from PIL import Image
 import os
 import torchvision
+from repath.data.annotations.geojson import load_annotations
 
 
 def gkern(klen, nsig):
@@ -450,8 +451,8 @@ if __name__ == '__main__':
         to_tensor = torchvision.transforms.ToTensor()
         if len(args.annotation_path) > 0:
             print('Evaluating segmentation performance...')
-            with Image.open(args.annotation_path + args.slide_name + "_mask.png") as im:
-                img = to_tensor(im).unsqueeze(0)
+            annotations = load_annotations(args.annotation_path + args.slide_name + ".txt", group_labels, label) if an else []
+
                 an_x, an_y = img.shape[-1], img.shape[-2]
                 an_scale_x, an_scale_y = xdim / an_x, ydim / an_y
                 an_x, an_x1, an_y, an_y1 = int(min_x // an_scale_x), int(max_x // an_scale_x), int(
