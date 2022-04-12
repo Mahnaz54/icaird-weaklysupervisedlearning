@@ -458,7 +458,7 @@ if __name__ == '__main__':
             print('Evaluating segmentation performance...')
             with Image.open(args.annotation_path + args.slide_name + "_mask.png") as im:
                 img = to_tensor(im).unsqueeze(0)
-                an_x, an_y = img.shape[-1], img.shape[-2]
+                an_x, an_y = img.shape[-2], img.shape[-1]
                 an_scale_x, an_scale_y = xdim / an_x, ydim / an_y
                 an_x, an_x1, an_y, an_y1 = int(min_x // an_scale_x), int(max_x // an_scale_x), int(
                     min_y // an_scale_y), int(max_y // an_scale_y)
