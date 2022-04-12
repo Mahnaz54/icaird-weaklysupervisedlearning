@@ -16,7 +16,6 @@ from scipy.ndimage.filters import gaussian_filter
 from PIL import Image
 import os
 import torchvision
-import json
 
 
 def gkern(klen, nsig):
@@ -313,6 +312,7 @@ if __name__ == '__main__':
 
     # load WSI
     wsi = WholeSlideImage(args.slide_path + args.slide_name + '.isyntax')
+
     transforms = default_transforms()
 
     args_code = '-'.join([str(s) for s in
@@ -333,6 +333,7 @@ if __name__ == '__main__':
         patch_size = coords.attrs['patch_size']
 
         _, ydim, _, xdim = wsi.level_dimensions[patch_level]
+        print(_, ydim, _, xdim)
         min_x, min_y, max_x, max_y = xdim, ydim, 0, 0
 
         pdim = patch_size // args.downsample
@@ -341,6 +342,10 @@ if __name__ == '__main__':
         wandb.log({
             'Patch Level': patch_level, 'Patch Size': patch_size, 'Num Patches': max_patches, 'Slide': args.slide_name
             })
+
+        valid_range = wsi._get_valid_range(patch_level)
+        print(valid_range)
+        exit()
 
         coords = sort_coords(coords, centre=args.centre)[:max_patches]
         if args.overlap:
@@ -451,11 +456,8 @@ if __name__ == '__main__':
         to_tensor = torchvision.transforms.ToTensor()
         if len(args.annotation_path) > 0:
             print('Evaluating segmentation performance...')
-            with open(args.annotation_path + args.slide_name + ".txt") as f:
-                annot = json.load(f)
-                print(annot)
-                exit()
-                img = to_tensor(annot).unsqueeze(0)
+            with Image.open(args.annotation_path + args.slide_name + "_mask.png") as im:
+                img = to_tensor(im).unsqueeze(0)
                 an_x, an_y = img.shape[-1], img.shape[-2]
                 an_scale_x, an_scale_y = xdim / an_x, ydim / an_y
                 an_x, an_x1, an_y, an_y1 = int(min_x // an_scale_x), int(max_x // an_scale_x), int(
