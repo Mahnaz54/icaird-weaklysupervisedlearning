@@ -16,7 +16,7 @@ from scipy.ndimage.filters import gaussian_filter
 from PIL import Image
 import os
 import torchvision
-from repath.data.annotations.geojson import load_annotations
+import repath
 
 
 def gkern(klen, nsig):
