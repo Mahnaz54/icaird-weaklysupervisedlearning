@@ -344,8 +344,6 @@ if __name__ == '__main__':
             })
 
         valid_range = wsi._get_valid_range(patch_level)
-        print(valid_range)
-        exit()
 
         coords = sort_coords(coords, centre=args.centre)[:max_patches]
         if args.overlap:
