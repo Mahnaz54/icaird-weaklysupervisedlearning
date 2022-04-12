@@ -16,7 +16,6 @@ from scipy.ndimage.filters import gaussian_filter
 from PIL import Image
 import os
 import torchvision
-import repath
 
 
 def gkern(klen, nsig):
@@ -451,55 +450,42 @@ if __name__ == '__main__':
         to_tensor = torchvision.transforms.ToTensor()
         if len(args.annotation_path) > 0:
             print('Evaluating segmentation performance...')
-            annot = repath.data.annotations.geojson.load_annotations(args.annotation_path + args.slide_name + '.txt',{"low_grade": "low_grade", "Low Grade": "low_grade", "Low grade": "low_grade", "low grade" : "low_grade",
-                   "high_grade": "high_grade", "High Grade": "high_grade", "High grade": "high_grade", "high grade": "high_grade",
-                   "malignant": "malignant", "Malignant":"malignant",
-                   "Normal/inflammation": "normal", "normal/inflammation": "normal", "normal": "normal"},
-                                                                     label="malignant")
-            annotation_set = repath.data.annotations.annotation.AnnotationSet(annotations=annot, labels={'malignant':0,
-                                                                                                        'insufficient':1, 'other_benign':2},
-                                                                             labels_order=['malignant',
-                                                                                           'insufficient',
-                                                                                           'other_benign'],
-                                          fill_label="malignant")
+            with Image.open(args.annotation_path + args.slide_name + ".txt") as annot:
+                print(annot)
+                exit()
+                img = to_tensor(annot).unsqueeze(0)
+                an_x, an_y = img.shape[-1], img.shape[-2]
+                an_scale_x, an_scale_y = xdim / an_x, ydim / an_y
+                an_x, an_x1, an_y, an_y1 = int(min_x // an_scale_x), int(max_x // an_scale_x), int(
+                    min_y // an_scale_y), int(max_y // an_scale_y)
+                scaled_an = torch.sum(F.interpolate(img[:, :, an_x:an_x1, an_y:an_y1], (im_x, im_y)), axis=1)
+                scaled_an[scaled_an != 1.0] = 0.0
 
-            annot_image = annotation_set.render(repath.utils.geometry.Shape(im_x, im_y), patch_level)
-            print(annot_image)
-            print(annot_image.shape)
-            wandb.log({'Annot Img':wandb.Image(annot_image)})
-            # img = to_tensor(im).unsqueeze(0)
-            # an_x, an_y = img.shape[-1], img.shape[-2]
-            # an_scale_x, an_scale_y = xdim / an_x, ydim / an_y
-            # an_x, an_x1, an_y, an_y1 = int(min_x // an_scale_x), int(max_x // an_scale_x), int(
-            #     min_y // an_scale_y), int(max_y // an_scale_y)
-            # scaled_an = torch.sum(F.interpolate(img[:, :, an_x:an_x1, an_y:an_y1], (im_x, im_y)), axis=1)
-            # scaled_an[scaled_an != 1.0] = 0.0
-            #
-            # malignant_ss = full_sal_seg
-            # malignant_ss[malignant_ss != 0] = 1
-            # malignant_ss = torch.abs(malignant_ss - 1).float()
-            #
-            # malignant_an = scaled_an[0]
-            #
-            # output = malignant_ss
-            # target = malignant_an
-            #
-            # tp = torch.sum(target * output)
-            # tn = torch.sum((1 - target) * (1 - output))
-            # fp = torch.sum((1 - target) * output)
-            # fn = torch.sum(target * (1 - output))
-            #
-            # p = tp / (tp + fp + 0.0001)
-            # r = tp / (tp + fn + 0.0001)
-            # f1 = 2 * p * r / (p + r + 0.0001)
-            # acc = (tp + tn) / (tp + tn + fp + fn)
-            # dice = (2 * tp) / (2*tp + fp + fn)
-            #
-            # wandb.log({'Expert': wandb.Image(malignant_an), 'Machine': wandb.Image(malignant_ss), 'Precision':p,
-            #            'Recall':r,
-            #            'F1':f1,
-            # 'Accuracy':acc,
-            #            'Dice':dice})
+                malignant_ss = full_sal_seg
+                malignant_ss[malignant_ss != 0] = 1
+                malignant_ss = torch.abs(malignant_ss - 1).float()
+
+                malignant_an = scaled_an[0]
+
+                output = malignant_ss
+                target = malignant_an
+
+                tp = torch.sum(target * output)
+                tn = torch.sum((1 - target) * (1 - output))
+                fp = torch.sum((1 - target) * output)
+                fn = torch.sum(target * (1 - output))
+
+                p = tp / (tp + fp + 0.0001)
+                r = tp / (tp + fn + 0.0001)
+                f1 = 2 * p * r / (p + r + 0.0001)
+                acc = (tp + tn) / (tp + tn + fp + fn)
+                dice = (2 * tp) / (2*tp + fp + fn)
+
+                wandb.log({'Expert': wandb.Image(malignant_an), 'Machine': wandb.Image(malignant_ss), 'Precision':p,
+                           'Recall':r,
+                           'F1':f1,
+                'Accuracy':acc,
+                           'Dice':dice})
 
 
         print('Done!')
