@@ -138,8 +138,6 @@ class WholeSlideImage(object):
         levels = self.pe[self.pe_slide_uuid].numLevels() + 1
         self.level_dimensions = [self._get_valid_range(l) for l in range(levels)]
 
-        print(levels, self.level_dimensions)
-
         self.contours_tissue = None
         self.contours_tumor = None
         self.seg_level = None
@@ -246,6 +244,7 @@ class WholeSlideImage(object):
         annotations = [anno.getElementsByTagName('Coordinate') for anno in xmldoc.getElementsByTagName('Annotation')]
         self.contours_tumor  = [_createContour(coord_list) for coord_list in annotations]
         self.contours_tumor = sorted(self.contours_tumor, key=cv2.contourArea, reverse=True)
+
 
     def initTxt(self,annot_path):
         def _create_contours_from_dict(annot):
@@ -362,7 +361,7 @@ class WholeSlideImage(object):
         # Find and filter contours
         contours, hierarchy = cv2.findContours(img_otsu, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE) # Find contours 
         hierarchy = np.squeeze(hierarchy, axis=(0,))[:,2:]
-        
+
         if filter_params: foreground_contours, hole_contours = _filter_contours(contours, hierarchy, filter_params)  # Necessary for filtering out artifacts
         self.contours_tissue = self.scaleContourDim(foreground_contours, scale)
         self.holes_tissue = self.scaleHolesDim(hole_contours, scale)
